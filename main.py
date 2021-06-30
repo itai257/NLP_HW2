@@ -117,7 +117,7 @@ for epoch in range(epochs):
         # print("tag_scores shape-", tag_scores.shape)
         # print("indices shape-", indices.shape)
         print("-------------------")
-        print("tagged_tree: {}, real_tree: {}".foramt(tagged_tree, true_tree_heads))
+        print("tagged_tree: {}, real_tree: {}".format(tagged_tree, true_tree_heads))
         acc = sum(tagged_tree == true_tree_heads[0]) / len(tagged_tree)
         acc_list.append(acc.item())
         #acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
