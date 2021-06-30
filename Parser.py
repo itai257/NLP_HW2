@@ -32,8 +32,12 @@ class KiperwasserDependencyParser(nn.Module):
         self.pos_embedding =  nn.Embedding(tag_vocab_size, tag_embedding_dim) # Implement embedding layer for POS tags
         self.hidden_dim = self.word_embedding.embedding_dim + self.pos_embedding.embedding_dim
         self.encoder = nn.LSTM(input_size=biLSTM_in_size, hidden_size=biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
-        self.edge_scorer = MLP(biLSTM_hidden_size*2*2) # Implement a sub-module to calculate the scores for all possible edges in sentence dependency graph
+        #self.edge_scorer = MLP(biLSTM_hidden_size*2*2) # Implement a sub-module to calculate the scores for all possible edges in sentence dependency graph
         self.decoder = decode_mst  # This is used to produce the maximum spannning tree during inference
+        self.hidden_dim_MLP = 100
+        self.layer_1 = torch.nn.Linear(biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
+        self.layer_2 = torch.nn.Linear(self.hidden_dim_MLP, 1)
+        self.activation = torch.tanh
         #self.loss_function = nn.NLLLoss()  # Implement the loss function described above
 
     def forward(self, sentence):
@@ -61,7 +65,10 @@ class KiperwasserDependencyParser(nn.Module):
             for m_idx in range(num_of_words):
                 v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device)
                 curr_matrix.append(v_head_modifier)
-                score = self.edge_scorer.forward(v_head_modifier)
+                x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
+                x = self.activation(x)  # x.size() -> [batch_size, self.hidden_dim]
+                score = self.layer_2(x)  # x.size() -> [batch_size, 1]
+                #score = self.edge_scorer.forward(v_head_modifier)
                 score_matrix[h_idx][m_idx] = score.item()
             v_head_modifier_matrix.append(curr_matrix)
 
@@ -77,9 +84,9 @@ class KiperwasserDependencyParser(nn.Module):
 class MLP(nn.Module):
    def __init__(self, layer1_input_dim):
        super(MLP, self).__init__()
-       self.hidden_dim = 100
-       self.layer_1 = torch.nn.Linear(layer1_input_dim, self.hidden_dim)
-       self.layer_2 = torch.nn.Linear(self.hidden_dim, 1)
+       self.hidden_dim_MLP = 100
+       self.layer_1 = torch.nn.Linear(layer1_input_dim, self.hidden_dim_MLP)
+       self.layer_2 = torch.nn.Linear(self.hidden_dim_MLP, 1)
        self.activation = torch.tanh
 
    def forward(self, x):
