@@ -105,7 +105,7 @@ for epoch in range(epochs):
 
         # print("tag_scores shape -", tag_scores.shape)
         # print("pos_idx_tensor shape -", pos_idx_tensor.shape)
-        loss = loss_function(soft_max_score_matrix, torch.arange(len(true_tree_heads[0])).to(device))
+        loss = loss_function(soft_max_score_matrix.to(device), torch.arange(len(true_tree_heads[0])).to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
 
