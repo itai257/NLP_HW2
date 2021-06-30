@@ -37,7 +37,7 @@ class KiperwasserDependencyParser(nn.Module):
         #self.loss_function = nn.NLLLoss()  # Implement the loss function described above
 
     def forward(self, sentence):
-
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
@@ -48,7 +48,7 @@ class KiperwasserDependencyParser(nn.Module):
         embeds = torch.cat((word_embeds, pos_embeds), 2) #[sentence_length, word_embed + pos_embed]
 
         # Get Bi-LSTM hidden representation for each word+pos in sentence
-        lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1))  # -> [num of words in sentence, 1, hidden_dim*2]
+        lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1).to(self.device))  # -> [num of words in sentence, 1, hidden_dim*2]
 
 
         # Get score for each possible edge in the parsing graph, construct score matrix
@@ -59,7 +59,7 @@ class KiperwasserDependencyParser(nn.Module):
         for h_idx in range(num_of_words):
             curr_matrix = []
             for m_idx in range(num_of_words):
-                v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1)
+                v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device)
                 curr_matrix.append(v_head_modifier)
                 score = self.edge_scorer.forward(v_head_modifier)
                 score_matrix[h_idx][m_idx] = score.item()
