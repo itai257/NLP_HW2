@@ -14,6 +14,7 @@ from DataLoad import get_vocabs, PosDataReader
 from DataLoad import PosDataset
 import Parser
 from Parser import KiperwasserDependencyParser
+import time
 """
 
 path_train = "data/train.labeled"
@@ -89,18 +90,22 @@ accuracy_list = []
 loss_list = []
 epochs = EPOCHS
 for epoch in range(epochs):
-    acc = 0  # to keep track of accuracy
+    epoch_start_time = time.time()
+    acc_list = []  # to keep track of accuracy
     printable_loss = 0  # To keep track of the loss value
     i = 0
     for batch_idx, input_data in enumerate(train_dataloader):
         i += 1
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
-        tag_scores = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
-        tag_scores = tag_scores.unsqueeze(0).permute(0, 2, 1)
+        tagged_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
+
+        true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim = 0).permute(1,0)
+        #tagged_tree = tagged_tree.unsqueeze(0) #.permute(0, 2, 1)
+
         # print("tag_scores shape -", tag_scores.shape)
         # print("pos_idx_tensor shape -", pos_idx_tensor.shape)
-        loss = loss_function(tag_scores, pos_idx_tensor.to(device))
+        loss = loss_function(soft_max_score_matrix, torch.arange(len(true_tree_heads[0])).to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
 
@@ -108,18 +113,24 @@ for epoch in range(epochs):
             optimizer.step()
             model.zero_grad()
         printable_loss += loss.item()
-        _, indices = torch.max(tag_scores, 1)
+        #_, indices = torch.max(tagged_tree, 1)
         # print("tag_scores shape-", tag_scores.shape)
         # print("indices shape-", indices.shape)
-        # acc += indices.eq(pos_idx_tensor.view_as(indices)).mean().item()
-        acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
+        acc = sum(tagged_tree == true_tree_heads[0]) / len(tagged_tree)
+        acc_list.append(acc.item())
+        #acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
     printable_loss = acumulate_grad_steps * (printable_loss / len(train))
-    acc = acc / len(train)
+    #acc = acc / len(train)
     loss_list.append(float(printable_loss))
-    accuracy_list.append(float(acc))
-    test_acc = evaluate()
+    #accuracy_list.append(float(acc))
+    #test_acc = evaluate()
     e_interval = i
-    print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}".format(epoch + 1,
+    #print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}".format(epoch + 1,
+    #                                                                              np.mean(loss_list[-e_interval:]),
+    #                                                                              np.mean(accuracy_list[-e_interval:]),
+    #                                                                              test_acc))
+    print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, time:".format(epoch + 1,
                                                                                   np.mean(loss_list[-e_interval:]),
-                                                                                  np.mean(accuracy_list[-e_interval:]),
-                                                                                  test_acc))
+                                                                                  sum(acc) / len(acc),
+                                                                                  0))
+    print(time.time() - epoch_start_time)
