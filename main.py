@@ -131,6 +131,6 @@ for epoch in range(epochs):
     #                                                                              test_acc))
     print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, time:".format(epoch + 1,
                                                                                   np.mean(loss_list[-e_interval:]),
-                                                                                  sum(acc) / len(acc),
+                                                                                  sum(acc_list) / len(acc_list),
                                                                                   0))
     print(time.time() - epoch_start_time)
