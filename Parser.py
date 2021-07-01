@@ -77,7 +77,7 @@ class KiperwasserDependencyParser(nn.Module):
 
         # Calculate the negative log likelihood loss described above
         #loss = 0
-        return torch.from_numpy(predicted_tree), F.softmax(torch.tensor(score_matrix, requires_grad=True), dim = 0)
+        return torch.from_numpy(predicted_tree), F.softmax(torch.tensor(score_matrix, requires_grad=True), dim=0)
 
 
 

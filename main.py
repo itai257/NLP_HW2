@@ -100,12 +100,12 @@ for epoch in range(epochs):
 
         tagged_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
 
-        true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim = 0).permute(1,0)
+        true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim=0)#.permute(1, 0)
         #tagged_tree = tagged_tree.unsqueeze(0) #.permute(0, 2, 1)
 
         # print("tag_scores shape -", tag_scores.shape)
         # print("pos_idx_tensor shape -", pos_idx_tensor.shape)
-        loss = loss_function(soft_max_score_matrix.to(device), torch.arange(len(true_tree_heads[0])).to(device))
+        loss = loss_function(soft_max_score_matrix.to(device), true_tree_heads[0].to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
 
