@@ -90,6 +90,7 @@ print("Training Started")
 accuracy_list = []
 loss_list = []
 epochs = EPOCHS
+clip = 1000 # gradient clipping
 for epoch in range(epochs):
     epoch_start_time = time.time()
     acc_list = []  # to keep track of accuracy
@@ -112,7 +113,7 @@ for epoch in range(epochs):
         loss = loss_function(soft_max_score_matrix.to(device), true_tree_heads[0].to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
-
+        nn.utils.clip_grad_norm_(model.parameters(), clip)
         if i % acumulate_grad_steps == 0:
             optimizer.step()
             model.zero_grad()
