@@ -114,6 +114,7 @@ for epoch in range(epochs):
                 print("-------------------")
                 print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
                 print("acc {}".format(acc))
+                print("accumulated accuracy: {}".format(sum(acc_list) / len(acc_list)))
         printable_loss += loss.item()
     printable_loss = acumulate_grad_steps * (printable_loss / len(train))
     loss_list.append(float(printable_loss))
