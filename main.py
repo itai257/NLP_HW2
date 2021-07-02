@@ -113,6 +113,7 @@ for epoch in range(epochs):
         loss = loss_function(soft_max_score_matrix.to(device), true_tree_heads[0].to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
+        print(i)
         nn.utils.clip_grad_norm_(model.parameters(), clip)
         if i % acumulate_grad_steps == 0:
             optimizer.step()
