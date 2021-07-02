@@ -69,7 +69,8 @@ HIDDEN_DIM = 1000
 word_vocab_size = len(train.word_idx_mappings)
 tag_vocab_size = len(train.pos_idx_mappings)
 
-model = KiperwasserDependencyParser(train_dataloader.dataset.word_vectors, HIDDEN_DIM, word_vocab_size, tag_vocab_size)
+model = KiperwasserDependencyParser(train_dataloader.dataset.word_vectors, HIDDEN_DIM, word_vocab_size, tag_vocab_size,
+                                    train_dataloader.dataset.pos_vectors)
 
 #use_cuda = torch.cuda.is_available()
 device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
