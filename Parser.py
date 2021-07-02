@@ -19,7 +19,7 @@ class KiperwasserDependencyParser(nn.Module):
         tag_vocab_size = args[3]
         word_embedding_dim = word_vocab_size
         tag_embedding_dim = tag_vocab_size
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
         #word_embedding_dim = args[4]
         #tag_embedding_dim = args[5]
 
@@ -42,16 +42,16 @@ class KiperwasserDependencyParser(nn.Module):
 
     def forward(self, sentence):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        with torch.no_grad():
-            word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
+
+        word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-            word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
-            pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
-            num_of_words = len(true_tree_heads[0])
+        word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
+        pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
+        num_of_words = len(true_tree_heads[0])
 
         # Concat both embedding outputs
-            embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
+        embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
 
         # Get Bi-LSTM hidden representation for each word+pos in sentence
         lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1))  # -> [num of words in sentence, 1, hidden_dim*2]
@@ -69,9 +69,8 @@ class KiperwasserDependencyParser(nn.Module):
         #        v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device) # TODO: check if concat is element wise
         #        score_matrix[h_idx][m_idx] = self.edge_scorer(v_head_modifier)
         #        v_head_modifier_matrix.append(v_head_modifier)
-        with torch.no_grad():
-            v_head_modifier_matrix = self.get_all_appended_head_mod(lstm_out)
-        score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)#
+        v_head_modifier_matrix = self.get_all_appended_head_mod(lstm_out)
+        score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words) #
         #y = torch.stack([x[i][all_ordered_idx_pairs] for i in range(x.shape[0])])
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
@@ -84,13 +83,14 @@ class KiperwasserDependencyParser(nn.Module):
         return F.softmax(score_matrix, dim=0)
 
     def get_all_appended_head_mod(self, lstm_out):
-        X = lstm_out.permute(1, 0, 2).squeeze(0)
-        X1 = X.unsqueeze(1)
-        Y1 = X.unsqueeze(0)
-        X2 = X1.repeat(1, X.shape[0], 1)
-        Y2 = Y1.repeat(X.shape[0], 1, 1)
+        with torch.no_grad():
+            X = lstm_out.permute(1, 0, 2).squeeze(0)
+            X1 = X.unsqueeze(1)
+            Y1 = X.unsqueeze(0)
+            X2 = X1.repeat(1, X.shape[0], 1)
+            Y2 = Y1.repeat(X.shape[0], 1, 1)
         Z = torch.cat([X2, Y2], -1)
-        Z = Z.view(-1, Z.shape[-1])
+        Z = Z.view(-1, Z.shape[-1]).to(self.device)
         return Z
     def edge_scorer(self, v_head_modifier):
         x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
