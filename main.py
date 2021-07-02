@@ -100,10 +100,7 @@ for epoch in range(epochs):
         i += 1
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
-        soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
-
-        score_matrix_to_decode = torch.tensor(soft_max_score_matrix).cpu().numpy()
-        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
+        predicted_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
 
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
         loss = loss / acumulate_grad_steps

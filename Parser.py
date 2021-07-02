@@ -69,21 +69,24 @@ class KiperwasserDependencyParser(nn.Module):
         score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
-        # -- score_matrix_to_decode = score_matrix.clone().detach().numpy()
+        soft_max_score_matrix = F.softmax(score_matrix, dim=0)
+
+        score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
+
+        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
         # -- predicted_tree, _ = decode_mst(score_matrix_to_decode, num_of_words, has_labels=False)
 
         # Calculate the negative log likelihood loss described above
 
         # -- return torch.from_numpy(predicted_tree), F.softmax(score_matrix, dim=0)
-        return F.softmax(score_matrix, dim=0)
+        return predicted_tree, soft_max_score_matrix
 
     def get_all_appended_head_mod(self, lstm_out):
-        with torch.no_grad():
-            X = lstm_out.permute(1, 0, 2).squeeze(0)
-            X1 = X.unsqueeze(1)
-            Y1 = X.unsqueeze(0)
-            X2 = X1.repeat(1, X.shape[0], 1)
-            Y2 = Y1.repeat(X.shape[0], 1, 1)
+        X = lstm_out.permute(1, 0, 2).squeeze(0)
+        X1 = X.unsqueeze(1)
+        Y1 = X.unsqueeze(0)
+        X2 = X1.repeat(1, X.shape[0], 1)
+        Y2 = Y1.repeat(X.shape[0], 1, 1)
         Z = torch.cat([X2, Y2], -1)
         Z = Z.view(-1, Z.shape[-1]).to(self.device)
         return Z
