@@ -41,8 +41,6 @@ class KiperwasserDependencyParser(nn.Module):
         #self.loss_function = nn.NLLLoss()  # Implement the loss function described above
 
     def forward(self, sentence):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers

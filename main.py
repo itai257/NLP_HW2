@@ -72,7 +72,7 @@ tag_vocab_size = len(train.pos_idx_mappings)
 
 model = KiperwasserDependencyParser(train_dataloader.dataset.word_vectors, HIDDEN_DIM, word_vocab_size, tag_vocab_size)
 
-use_cuda = torch.cuda.is_available()
+#use_cuda = torch.cuda.is_available()
 device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
 
 #if use_cuda:
