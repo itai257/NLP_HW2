@@ -15,6 +15,7 @@ from DataLoad import PosDataset
 import Parser
 from Parser import KiperwasserDependencyParser
 import time
+from chu_liu_edmonds import decode_mst
 """
 
 path_train = "data/train.labeled"
@@ -98,9 +99,12 @@ for epoch in range(epochs):
         i += 1
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
-        tagged_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
+        soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
 
-        true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim=0)#.permute(1, 0)
+        score_matrix_to_decode = soft_max_score_matrix.clone().detach().numpy()
+        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
+
+        #true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim=0)#.permute(1, 0)
         #tagged_tree = tagged_tree.unsqueeze(0) #.permute(0, 2, 1)
 
         # print("tag_scores shape -", tag_scores.shape)
@@ -113,12 +117,12 @@ for epoch in range(epochs):
             optimizer.step()
             model.zero_grad()
             print("-------------------")
-            print("tagged_tree: {}, real_tree: {}".format(tagged_tree, true_tree_heads))
+            print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
         printable_loss += loss.item()
         #_, indices = torch.max(tagged_tree, 1)
         # print("tag_scores shape-", tag_scores.shape)
         # print("indices shape-", indices.shape)
-        acc = sum(tagged_tree == true_tree_heads[0]) / len(tagged_tree)
+        acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
         acc_list.append(acc.item())
         #acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
     printable_loss = acumulate_grad_steps * (printable_loss / len(train))
