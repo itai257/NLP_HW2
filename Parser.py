@@ -13,8 +13,8 @@ from torch import Tensor
 class KiperwasserDependencyParser(nn.Module):
     def __init__(self, *args):
         super(KiperwasserDependencyParser, self).__init__()
-        self.word_embeddings = args[0]
-        self.pos_embeddings = args[4]
+        self.word_embeddings_one_hot = args[0]
+        self.pos_embeddings_one_hot = args[4]
         biLSTM_hidden_size = args[1]
         word_vocab_size = args[2]
         tag_vocab_size = args[3]
@@ -44,8 +44,12 @@ class KiperwasserDependencyParser(nn.Module):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        word_embeds = self.word_embeddings[word_idx_tensor]
-        pos_embeds = self.pos_embeddings[pos_idx_tensor]
+        #word_embeds = self.word_embedding(word_idx_tensor)
+        #pos_embeds = self.pos_embedding(pos_idx_tensor)
+
+        word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
+        pos_embeds = self.pos_embeddings_one_hot[pos_idx_tensor]
+
         num_of_words = len(true_tree_heads[0])
 
         # Concat both embedding outputs
