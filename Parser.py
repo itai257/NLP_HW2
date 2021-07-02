@@ -42,21 +42,23 @@ class KiperwasserDependencyParser(nn.Module):
 
     def forward(self, sentence):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
+        with torch.no_grad():
+            word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
-        pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
+            word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
+            pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
+            num_of_words = len(true_tree_heads)
 
         # Concat both embedding outputs
-        embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
+            embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
 
         # Get Bi-LSTM hidden representation for each word+pos in sentence
         lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1))  # -> [num of words in sentence, 1, hidden_dim*2]
 
 
         # Get score for each possible edge in the parsing graph, construct score matrix
-        num_of_words = len(lstm_out)
+
         v_head_modifier_matrix = []
         #score_matrix = np.zeros((num_of_words, num_of_words))
         #score_matrix = torch.zeros(num_of_words, num_of_words, dtype=torch.float32) # TODO: require grads
@@ -67,7 +69,8 @@ class KiperwasserDependencyParser(nn.Module):
         #        v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device) # TODO: check if concat is element wise
         #        score_matrix[h_idx][m_idx] = self.edge_scorer(v_head_modifier)
         #        v_head_modifier_matrix.append(v_head_modifier)
-        v_head_modifier_matrix = self.get_all_appended_head_mod(lstm_out)
+        with torch.no_grad():
+            v_head_modifier_matrix = self.get_all_appended_head_mod(lstm_out)
         score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)#
         #y = torch.stack([x[i][all_ordered_idx_pairs] for i in range(x.shape[0])])
 
@@ -94,7 +97,7 @@ class KiperwasserDependencyParser(nn.Module):
         x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
         x = self.layer_2(x)  # x.size() -> [batch_size, 1]
         return x
-
+"""
 class MLP(nn.Module):
    def __init__(self, layer1_input_dim):
        super(MLP, self).__init__()
@@ -108,3 +111,4 @@ class MLP(nn.Module):
        x = self.activation(x)
        x = self.layer_2(x)
        return x
+"""

@@ -103,7 +103,7 @@ for epoch in range(epochs):
         soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))  # changed??
 
         score_matrix_to_decode = torch.tensor(soft_max_score_matrix).cpu().numpy()
-        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
+        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0].to(device)), has_labels=False)
 
         #true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim=0)#.permute(1, 0)
         #tagged_tree = tagged_tree.unsqueeze(0) #.permute(0, 2, 1)
