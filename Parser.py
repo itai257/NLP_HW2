@@ -20,7 +20,8 @@ class KiperwasserDependencyParser(nn.Module):
         tag_vocab_size = args[3]
         word_embedding_dim = word_vocab_size
         tag_embedding_dim = tag_vocab_size
-        self.device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
+        # self.device = "cpu"
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         #word_embedding_dim = args[4]
         #tag_embedding_dim = args[5]
 

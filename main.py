@@ -72,11 +72,14 @@ tag_vocab_size = len(train.pos_idx_mappings)
 model = KiperwasserDependencyParser(train_dataloader.dataset.word_vectors, HIDDEN_DIM, word_vocab_size, tag_vocab_size,
                                     train_dataloader.dataset.pos_vectors)
 
-#use_cuda = torch.cuda.is_available()
-device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
+use_cuda = torch.cuda.is_available()
+if use_cuda:
+    model.cuda()
 
-#if use_cuda:
-#    model.cuda()
+#device = "cpu"
+device = torch.device("cuda:0" if use_cuda else "cpu")
+
+
 
 # Define the loss function as the Negative Log Likelihood loss (NLLLoss)
 loss_function = nn.NLLLoss()
