@@ -59,18 +59,20 @@ class KiperwasserDependencyParser(nn.Module):
         num_of_words = len(lstm_out)
         v_head_modifier_matrix = []
         #score_matrix = np.zeros((num_of_words, num_of_words))
-        score_matrix = torch.zeros(num_of_words, num_of_words, dtype=torch.float32)
+        score_matrix = torch.zeros(num_of_words, num_of_words, dtype=torch.float32) # TODO: require grads
         for h_idx in range(num_of_words):
             curr_matrix = []
             for m_idx in range(num_of_words):
-                v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device)
-                curr_matrix.append(v_head_modifier)
+                if h_idx == m_idx:
+                    continue
+                v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device) # TODO: check if concat is element wise
+                #curr_matrix.append(v_head_modifier)
                 x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
                 x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
                 score = self.layer_2(x)  # x.size() -> [batch_size, 1]
                 #score = self.edge_scorer.forward(v_head_modifier)
                 score_matrix[h_idx][m_idx] = score
-            v_head_modifier_matrix.append(curr_matrix)
+            #v_head_modifier_matrix.append(curr_matrix)
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
         # -- score_matrix_to_decode = score_matrix.clone().detach().numpy()
