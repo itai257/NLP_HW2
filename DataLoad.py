@@ -78,7 +78,7 @@ class PosDataReader:
 
         with open(self.file, 'r') as f:
             cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
-            cur_true_heads = ['0'] # addition
+            cur_true_heads = ['0']  # addition
             for line in f:
                 if line == "\n":
                     self.sentences.append((cur_sentence, cur_true_heads))
@@ -108,12 +108,12 @@ class PosDataset(Dataset):
         self.file = dir_path + subset + ".labeled"
         self.datareader = PosDataReader(self.file, word_dict, pos_dict)
         self.vocab_size = len(self.datareader.word_dict)
-        #if word_embeddings:
-        #    self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = word_embeddings
-        #else:
+
+        # one hot embeddings:
         self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
             self.datareader.word_dict)
 
+        # one hot embeddings:
         self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
 
         self.pad_idx = self.word_idx_mappings.get(PAD_TOKEN)

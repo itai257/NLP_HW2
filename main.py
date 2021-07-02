@@ -12,7 +12,6 @@ from pathlib import Path
 from collections import Counter
 from DataLoad import get_vocabs, PosDataReader
 from DataLoad import PosDataset
-import Parser
 from Parser import KiperwasserDependencyParser
 import time
 from chu_liu_edmonds import decode_mst
@@ -105,15 +104,12 @@ for epoch in range(epochs):
         score_matrix_to_decode = torch.tensor(soft_max_score_matrix).cpu().numpy()
         predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
 
-        #true_edges_indices = torch.cat((true_tree_heads, torch.arange(0,len(true_tree_heads[0])).unsqueeze(0)), dim=0)#.permute(1, 0)
-        #tagged_tree = tagged_tree.unsqueeze(0) #.permute(0, 2, 1)
-
-        # print("tag_scores shape -", tag_scores.shape)
-        # print("pos_idx_tensor shape -", pos_idx_tensor.shape)
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
         loss = loss / acumulate_grad_steps
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), clip)
+        acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
+        acc_list.append(acc.item())
         if i % acumulate_grad_steps == 0:
             optimizer.step()
             model.zero_grad()
@@ -122,22 +118,10 @@ for epoch in range(epochs):
                 print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
                 print("acc {}".format(acc))
         printable_loss += loss.item()
-        #_, indices = torch.max(tagged_tree, 1)
-        # print("tag_scores shape-", tag_scores.shape)
-        # print("indices shape-", indices.shape)
-        acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
-        acc_list.append(acc.item())
-        #acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
     printable_loss = acumulate_grad_steps * (printable_loss / len(train))
-    #acc = acc / len(train)
     loss_list.append(float(printable_loss))
-    #accuracy_list.append(float(acc))
     #test_acc = evaluate()
     e_interval = i
-    #print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}".format(epoch + 1,
-    #                                                                              np.mean(loss_list[-e_interval:]),
-    #                                                                              np.mean(accuracy_list[-e_interval:]),
-    #                                                                              test_acc))
     print("---")
     print("---")
     print("---")
