@@ -83,7 +83,7 @@ loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 50  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 10  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
@@ -110,7 +110,7 @@ for epoch in range(epochs):
 
         # print("tag_scores shape -", tag_scores.shape)
         # print("pos_idx_tensor shape -", pos_idx_tensor.shape)
-        loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
+        loss = loss_function(soft_max_score_matrix, true_tree_heads[0])
         loss = loss / acumulate_grad_steps
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), clip)
@@ -119,6 +119,7 @@ for epoch in range(epochs):
             model.zero_grad()
             print("-------------------")
             print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
+            print("acc {}".format(acc))
         printable_loss += loss.item()
         #_, indices = torch.max(tagged_tree, 1)
         # print("tag_scores shape-", tag_scores.shape)
