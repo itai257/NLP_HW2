@@ -83,7 +83,7 @@ loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 60  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 2  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
