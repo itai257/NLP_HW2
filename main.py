@@ -83,7 +83,7 @@ loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 10  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 50  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
@@ -117,9 +117,10 @@ for epoch in range(epochs):
         if i % acumulate_grad_steps == 0:
             optimizer.step()
             model.zero_grad()
-            print("-------------------")
-            print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
-            print("acc {}".format(acc))
+            if i % 100 == 0:
+                print("-------------------")
+                print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
+                print("acc {}".format(acc))
         printable_loss += loss.item()
         #_, indices = torch.max(tagged_tree, 1)
         # print("tag_scores shape-", tag_scores.shape)
@@ -137,6 +138,13 @@ for epoch in range(epochs):
     #                                                                              np.mean(loss_list[-e_interval:]),
     #                                                                              np.mean(accuracy_list[-e_interval:]),
     #                                                                              test_acc))
+    print("---")
+    print("---")
+    print("---")
+    print("---")
+    print("---")
+    print("---")
+    print("---")
     print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, time:".format(epoch + 1,
                                                                                   np.mean(loss_list[-e_interval:]),
                                                                                   sum(acc_list) / len(acc_list),

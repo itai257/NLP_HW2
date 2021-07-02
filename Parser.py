@@ -29,7 +29,7 @@ class KiperwasserDependencyParser(nn.Module):
         biLSTM_in_size = word_embedding_dim+tag_embedding_dim
         #
         self.word_embedding = nn.Embedding(word_vocab_size, word_embedding_dim) # Implement embedding layer for words (can be new or pretrained - word2vec/glove)
-        self.pos_embedding =  nn.Embedding(tag_vocab_size, tag_embedding_dim) # Implement embedding layer for POS tags
+        self.pos_embedding = nn.Embedding(tag_vocab_size, tag_embedding_dim) # Implement embedding layer for POS tags
         self.hidden_dim = self.word_embedding.embedding_dim + self.pos_embedding.embedding_dim
         self.encoder = nn.LSTM(input_size=biLSTM_in_size, hidden_size=biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
         #self.edge_scorer = MLP(biLSTM_hidden_size*2*2) # Implement a sub-module to calculate the scores for all possible edges in sentence dependency graph
