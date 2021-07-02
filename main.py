@@ -75,8 +75,8 @@ model = KiperwasserDependencyParser(train_dataloader.dataset.word_vectors, HIDDE
 use_cuda = torch.cuda.is_available()
 device = "cpu" #torch.device("cuda:0" if use_cuda else "cpu")
 
-if use_cuda:
-    model.cuda()
+#if use_cuda:
+#    model.cuda()
 
 # Define the loss function as the Negative Log Likelihood loss (NLLLoss)
 loss_function = nn.NLLLoss()
