@@ -36,18 +36,18 @@ train = PosDataset(word_dict, pos_dict, "data/", 'train', padding=False)
 """
 
 ########################################################
-def evaluate():
-    acc = 0
-    with torch.no_grad():
-        for batch_idx, input_data in enumerate(test_dataloader):
-            words_idx_tensor, pos_idx_tensor, sentence_length = input_data
-            tag_scores = model(words_idx_tensor)
-            tag_scores = tag_scores.unsqueeze(0).permute(0, 2, 1)
-
-            _, indices = torch.max(tag_scores, 1)
-            acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
-        acc = acc / len(test)
-    return acc
+#def evaluate():
+#    acc = 0
+#    with torch.no_grad():
+#        for batch_idx, input_data in enumerate(test_dataloader):
+#            words_idx_tensor, pos_idx_tensor, sentence_length = input_data
+#            tag_scores = model(words_idx_tensor)
+#            tag_scores = tag_scores.unsqueeze(0).permute(0, 2, 1)
+#
+#            _, indices = torch.max(tag_scores, 1)
+#            acc += torch.mean(torch.tensor(pos_idx_tensor.to("cpu") == indices.to("cpu"), dtype=torch.float))
+#        acc = acc / len(test)
+#    return acc
 
 # CUDA_LAUNCH_BLOCKING=1
 data_dir = "data/"
@@ -60,8 +60,8 @@ paths_list = [path_train]
 word_dict, pos_dict = get_vocabs(paths_list)
 train = PosDataset(word_dict, pos_dict, data_dir, 'train', padding=False)
 train_dataloader = DataLoader(train, shuffle=True)
-test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
-test_dataloader = DataLoader(test, shuffle=False)
+#test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
+#test_dataloader = DataLoader(test, shuffle=False)
 
 
 EPOCHS = 15
