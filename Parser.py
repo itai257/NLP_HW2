@@ -66,18 +66,19 @@ class KiperwasserDependencyParser(nn.Module):
                 v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device)
                 curr_matrix.append(v_head_modifier)
                 x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
-                x = self.activation(x)  # x.size() -> [batch_size, self.hidden_dim]
+                x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
                 score = self.layer_2(x)  # x.size() -> [batch_size, 1]
                 #score = self.edge_scorer.forward(v_head_modifier)
-                score_matrix[h_idx][m_idx] = score.item()
+                score_matrix[h_idx][m_idx] = score
             v_head_modifier_matrix.append(curr_matrix)
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
-        predicted_tree, _ = decode_mst(score_matrix, num_of_words, has_labels=False)
+        score_matrix_to_decode = score_matrix.clone().detach().numpy()
+        predicted_tree, _ = decode_mst(score_matrix_to_decode, num_of_words, has_labels=False)
 
         # Calculate the negative log likelihood loss described above
         #loss = 0
-        return torch.from_numpy(predicted_tree), F.softmax(torch.tensor(score_matrix, requires_grad=True), dim=0)
+        return torch.from_numpy(predicted_tree), F.softmax(score_matrix, dim=0)
 
 
 
@@ -90,7 +91,7 @@ class MLP(nn.Module):
        self.activation = torch.tanh
 
    def forward(self, x):
-       x = self.layer_1(x)        # x.size() -> [batch_size, self.hidden_dim]
-       x = self.activation(x)     # x.size() -> [batch_size, self.hidden_dim]
-       x = self.layer_2(x)        # x.size() -> [batch_size, 1]
+       x = self.layer_1(x)
+       x = self.activation(x)
+       x = self.layer_2(x)
        return x
