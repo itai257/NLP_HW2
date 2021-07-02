@@ -117,7 +117,6 @@ for epoch in range(epochs):
         nn.utils.clip_grad_norm_(model.parameters(), clip)
         if i % acumulate_grad_steps == 0:
             optimizer.step()
-            print("---")
             model.zero_grad()
             print("-------------------")
             print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))

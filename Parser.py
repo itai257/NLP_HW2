@@ -45,14 +45,14 @@ class KiperwasserDependencyParser(nn.Module):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
-        pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
+        word_embeds = self.word_embedding(word_idx_tensor)
+        pos_embeds = self.pos_embedding(pos_idx_tensor)
 
         # Concat both embedding outputs
-        embeds = torch.cat((word_embeds, pos_embeds), 2) #[sentence_length, word_embed + pos_embed]
+        embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
 
         # Get Bi-LSTM hidden representation for each word+pos in sentence
-        lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1).to(self.device))  # -> [num of words in sentence, 1, hidden_dim*2]
+        lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1))  # -> [num of words in sentence, 1, hidden_dim*2]
 
 
         # Get score for each possible edge in the parsing graph, construct score matrix
