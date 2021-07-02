@@ -59,20 +59,17 @@ class KiperwasserDependencyParser(nn.Module):
         num_of_words = len(lstm_out)
         v_head_modifier_matrix = []
         #score_matrix = np.zeros((num_of_words, num_of_words))
-        score_matrix = torch.zeros(num_of_words, num_of_words, dtype=torch.float32) # TODO: require grads
-        for h_idx in range(num_of_words):
-            curr_matrix = []
-            for m_idx in range(num_of_words):
-                if h_idx == m_idx:
-                    continue
-                v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device) # TODO: check if concat is element wise
-                #curr_matrix.append(v_head_modifier)
-                x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
-                x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
-                score = self.layer_2(x)  # x.size() -> [batch_size, 1]
-                #score = self.edge_scorer.forward(v_head_modifier)
-                score_matrix[h_idx][m_idx] = score
-            #v_head_modifier_matrix.append(curr_matrix)
+        #score_matrix = torch.zeros(num_of_words, num_of_words, dtype=torch.float32) # TODO: require grads
+        #for h_idx in range(num_of_words):
+        #    for m_idx in range(num_of_words):
+        #        #if h_idx == m_idx:
+        #        #    continue
+        #        v_head_modifier = torch.cat((lstm_out[h_idx], lstm_out[m_idx]), 1).to(self.device) # TODO: check if concat is element wise
+        #        score_matrix[h_idx][m_idx] = self.edge_scorer(v_head_modifier)
+        #        v_head_modifier_matrix.append(v_head_modifier)
+        v_head_modifier_matrix = self.get_all_appended_head_mod(lstm_out)
+        score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)#
+        #y = torch.stack([x[i][all_ordered_idx_pairs] for i in range(x.shape[0])])
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
         # -- score_matrix_to_decode = score_matrix.clone().detach().numpy()
@@ -83,7 +80,20 @@ class KiperwasserDependencyParser(nn.Module):
         # -- return torch.from_numpy(predicted_tree), F.softmax(score_matrix, dim=0)
         return F.softmax(score_matrix, dim=0)
 
-
+    def get_all_appended_head_mod(self, lstm_out):
+        X = lstm_out.permute(1, 0, 2).squeeze(0)
+        X1 = X.unsqueeze(1)
+        Y1 = X.unsqueeze(0)
+        X2 = X1.repeat(1, X.shape[0], 1)
+        Y2 = Y1.repeat(X.shape[0], 1, 1)
+        Z = torch.cat([X2, Y2], -1)
+        Z = Z.view(-1, Z.shape[-1])
+        return Z
+    def edge_scorer(self, v_head_modifier):
+        x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
+        x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
+        x = self.layer_2(x)  # x.size() -> [batch_size, 1]
+        return x
 
 class MLP(nn.Module):
    def __init__(self, layer1_input_dim):
