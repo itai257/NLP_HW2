@@ -56,7 +56,7 @@ print("path_train -", path_train)
 path_test = data_dir + "test.labeled"
 print("path_test -", path_test)
 
-paths_list = [path_train, path_test]
+paths_list = [path_train]
 word_dict, pos_dict = get_vocabs(paths_list)
 train = PosDataset(word_dict, pos_dict, data_dir, 'train', padding=False)
 train_dataloader = DataLoader(train, shuffle=True)
