@@ -110,9 +110,11 @@ for epoch in range(epochs):
         loss.backward()
         acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
         acc_list.append(acc.item())
+        optimizer.step()
+        model.zero_grad()
         if i % acumulate_grad_steps == 0:
-            optimizer.step()
-            model.zero_grad()
+            #optimizer.step()
+            #model.zero_grad()
             if i % 100 == 0:
                 print("-------------------")
                 print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
