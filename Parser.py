@@ -77,7 +77,7 @@ class KiperwasserDependencyParser(nn.Module):
         score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
-        soft_max_score_matrix = F.softmax(score_matrix, dim=1)
+        soft_max_score_matrix = F.softmax(score_matrix, dim=0)
 
         score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
 
