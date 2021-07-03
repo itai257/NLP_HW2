@@ -48,8 +48,8 @@ class KiperwasserDependencyParser(nn.Module):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        word_embeds = self.word_embedding(word_idx_tensor)
-        pos_embeds = self.pos_embedding(pos_idx_tensor)
+        word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
+        pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
 
         #word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
         #pos_embeds = self.pos_embeddings_one_hot[pos_idx_tensor]
