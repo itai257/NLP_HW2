@@ -44,6 +44,7 @@ def get_vocabs(list_of_paths):
     """
     word_dict = defaultdict(int)
     pos_dict = defaultdict(int)
+    alpha = 0.25
     #j = 0
     for s_t in SPECIAL_TOKENS:
         word_dict[s_t] += 1
@@ -60,6 +61,16 @@ def get_vocabs(list_of_paths):
                 word_dict[token] += 1
                 pos_dict[pos_tag] += 1
 
+    #perform dropout:
+    words_to_drop = []
+    for word in word_dict.keys():
+        if alpha / (alpha + word_dict[word]) > 0.2 and word not in SPECIAL_TOKENS:
+            words_to_drop.append(word)
+    i = 0
+    for w in words_to_drop:
+        word_dict.pop(w)
+        i+=1
+    print(i)
     return word_dict, pos_dict
 
 
@@ -85,12 +96,18 @@ class PosDataReader:
                     cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
                     cur_true_heads = ['0']  # addition
                     continue
+
                 splited_line = split(line, ('\t', '\n'))
                 token = splited_line[1]
                 pos_tag = splited_line[3]
                 true_head = splited_line[6]
-                cur_sentence.append((token, pos_tag))
-                cur_true_heads.append(true_head)
+                if token in self.word_dict.keys():
+                    cur_sentence.append((token, pos_tag))
+                    cur_true_heads.append(true_head)
+                else:
+                    # for words dropout
+                    cur_sentence.append((UNKNOWN_TOKEN, UNKNOWN_TOKEN))
+                    cur_true_heads.append('0')
 
 
 

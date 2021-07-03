@@ -18,8 +18,11 @@ class KiperwasserDependencyParser(nn.Module):
         biLSTM_hidden_size = args[1]
         word_vocab_size = args[2]
         tag_vocab_size = args[3]
-        word_embedding_dim = word_vocab_size
-        tag_embedding_dim = tag_vocab_size
+        #word_embedding_dim = word_vocab_size
+        #tag_embedding_dim = tag_vocab_size
+
+        word_embedding_dim = 100
+        tag_embedding_dim = 25
         # self.device = "cpu"
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         #word_embedding_dim = args[4]
@@ -45,11 +48,11 @@ class KiperwasserDependencyParser(nn.Module):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        #word_embeds = self.word_embedding(word_idx_tensor)
-        #pos_embeds = self.pos_embedding(pos_idx_tensor)
+        word_embeds = self.word_embedding(word_idx_tensor)
+        pos_embeds = self.pos_embedding(pos_idx_tensor)
 
-        word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
-        pos_embeds = self.pos_embeddings_one_hot[pos_idx_tensor]
+        #word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
+        #pos_embeds = self.pos_embeddings_one_hot[pos_idx_tensor]
 
         num_of_words = len(true_tree_heads[0])
 
