@@ -86,7 +86,7 @@ loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 100  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 70  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
@@ -106,7 +106,7 @@ for epoch in range(epochs):
         predicted_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
 
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
-        #loss = loss / acumulate_grad_steps
+        loss = loss / acumulate_grad_steps
         loss.backward()
         acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
         acc_list.append(acc.item())
