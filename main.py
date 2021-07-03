@@ -86,7 +86,7 @@ loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 50  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 30  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
@@ -118,6 +118,7 @@ for epoch in range(epochs):
                 print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
                 print("acc {}".format(acc))
                 print("accumulated accuracy: {}".format(sum(acc_list) / len(acc_list)))
+                acc_list = []
         printable_loss += loss.item()
     printable_loss = acumulate_grad_steps * (printable_loss / len(train))
     loss_list.append(float(printable_loss))
