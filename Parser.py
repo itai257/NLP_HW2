@@ -11,10 +11,10 @@ from torch import Tensor
 
 
 class KiperwasserDependencyParser(nn.Module):
-    def __init__(self, biLSTM_hidden_dim, word_vocab_size, tag_vocab_size, external_words_embeddings = None):
+    def __init__(self, biLSTM_hidden_dim, word_vocab_size, tag_vocab_size, pretrained_words_embeddings = None):
         super(KiperwasserDependencyParser, self).__init__()
-        if external_words_embeddings is not None:
-            self.word_embedding = nn.Embedding.from_pretrained(external_words_embeddings, freeze=False)
+        if pretrained_words_embeddings is not None:
+            self.word_embedding = nn.Embedding.from_pretrained(pretrained_words_embeddings, freeze=False)
             self.word_embedding_dim = 300
             self.tag_embedding_dim = 50
         else:
@@ -39,6 +39,7 @@ class KiperwasserDependencyParser(nn.Module):
         self.layer_1 = torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
         self.layer_2 = torch.nn.Linear(self.hidden_dim_MLP, 1)
         self.activation = torch.tanh
+        self.soft_max = nn.LogSoftmax(dim=0)
         self.mlp = nn.Sequential(
             torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP),
             nn.ReLU(),
@@ -77,7 +78,7 @@ class KiperwasserDependencyParser(nn.Module):
         score_matrix = self.edge_scorer(v_head_modifier_matrix).view(num_of_words, num_of_words)
 
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
-        soft_max_score_matrix = F.softmax(score_matrix, dim=0)
+        soft_max_score_matrix = self.soft_max(score_matrix)
 
         score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
 

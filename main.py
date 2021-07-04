@@ -47,7 +47,7 @@ train_dataloader = DataLoader(train, shuffle=True)
 #test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 15
+EPOCHS = 100
 WORD_EMBEDDING_DIM = 100
 HIDDEN_DIM = 1000
 word_vocab_size = len(train.word_idx_mappings)
@@ -69,7 +69,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 loss_function = nn.NLLLoss(ignore_index=-1)
 
 # We will be using a simple SGD optimizer to minimize the loss function
-optimizer = optim.Adam(model.parameters(), lr=0.002)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 acumulate_grad_steps = 40  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
@@ -77,7 +77,9 @@ print("Training Started")
 accuracy_list = []
 loss_list = []
 epochs = EPOCHS
+
 for epoch in range(epochs):
+    result_file = open('result.txt', 'a+')
     epoch_start_time = time.time()
     acc_list = []  # to keep track of accuracy
     printable_loss = 0  # To keep track of the loss value
@@ -99,28 +101,23 @@ for epoch in range(epochs):
         #if i % acumulate_grad_steps == 0:
         optimizer.step()
 
-        if i % 100 == 0:
-            print("-------------------")
-            print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
-            print("acc {}".format(acc))
-            print("batch accuracy: {}".format(sum(acc_list[-100:]) / len(acc_list[-100:])))
+        if i % 500 == 0:
+            text = "-------------------\ntagged_tree: {}, real_tree: {}\nlast 500 acc: {}\nloss:{}"\
+                .format(predicted_tree, true_tree_heads, sum(acc_list[-500:]) / len(acc_list[-500:])
+                        , np.mean(loss_list[-500:]))
+            print(text)
+            result_file.write()
         printable_loss += loss.item()
-    #printable_loss = acumulate_grad_steps * (printable_loss / len(train))
-    printable_loss = (printable_loss / len(train))
+    printable_loss = printable_loss / len(train)
     loss_list.append(float(printable_loss))
     #test_acc = evaluate()
     e_interval = i
-    print("---")
-    print("---")
-    print("---")
-    print("---")
-    print("---")
-    print("---")
-    print("---")
-    print("Epoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, time:".format(epoch + 1,
-                                                                                  np.mean(loss_list[-e_interval:]),
-                                                                                  sum(acc_list[-e_interval:]) / len(acc_list[-e_interval:]),
-                                                                                  0))
-    print(time.time() - epoch_start_time)
+    epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, \
+    time:".format(epoch + 1, np.mean(loss_list[-e_interval:]), sum(acc_list[-e_interval:]) / len(acc_list[-e_interval:]),
+                  time.time() - epoch_start_time)
+    print("epoch_print")
+
+    result_file.write(epoch_print)
+    result_file.close()
 
 
