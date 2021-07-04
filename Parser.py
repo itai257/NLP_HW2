@@ -14,15 +14,16 @@ class KiperwasserDependencyParser(nn.Module):
     def __init__(self, biLSTM_hidden_dim, word_vocab_size, tag_vocab_size, pretrained_words_embeddings = None):
         super(KiperwasserDependencyParser, self).__init__()
         if pretrained_words_embeddings is not None:
-            self.word_embedding = nn.Embedding.from_pretrained(pretrained_words_embeddings, freeze=False)
-            self.word_embedding_dim = 300
+            self.word_embedding = nn.Embedding(word_vocab_size, 150)
+            self.pre_trained_embeddings = nn.Embedding.from_pretrained(pretrained_words_embeddings, freeze=True)
+            self.word_embedding_dim = 300+150
             self.tag_embedding_dim = 50
         else:
             self.word_embedding_dim = 100
             self.tag_embedding_dim = 25
             self.word_embedding = nn.Embedding(word_vocab_size, self.word_embedding_dim)
 
-        self.biLSTM_hidden_size = biLSTM_hidden_dim
+        self.biLSTM_hidden_size = biLSTM_hidden_dim+500
         biLSTM_in_size = self.word_embedding_dim + self.tag_embedding_dim
 
         self.pos_embedding = nn.Embedding(tag_vocab_size, self.tag_embedding_dim)
@@ -42,14 +43,15 @@ class KiperwasserDependencyParser(nn.Module):
         self.soft_max = nn.LogSoftmax(dim=0)
         self.mlp = nn.Sequential(
             torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(self.hidden_dim_MLP, 1))
 
     def forward(self, sentence):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
 
         # Pass word_idx and pos_idx through their embedding layers
-        word_embeds = self.word_embedding(word_idx_tensor.to(self.device))
+        word_idx_on_device = word_idx_tensor.to(self.device)
+        word_embeds = torch.cat((self.word_embedding(word_idx_on_device).squeeze(0), self.pre_trained_embeddings(word_idx_on_device).squeeze(0)), dim = 1)
         pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
 
         #word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
@@ -58,10 +60,10 @@ class KiperwasserDependencyParser(nn.Module):
         num_of_words = len(true_tree_heads[0])
 
         # Concat both embedding outputs
-        embeds = torch.cat((word_embeds, pos_embeds), 2).to(self.device) #[sentence_length, word_embed + pos_embed]
+        embeds = torch.cat((word_embeds, pos_embeds.squeeze(0)), 1).to(self.device) #[sentence_length, word_embed + pos_embed]
 
         # Get Bi-LSTM hidden representation for each word+pos in sentence
-        lstm_out, _ = self.encoder(embeds.view(embeds.shape[1], 1, -1).float())  # -> [num of words in sentence, 1, hidden_dim*2]
+        lstm_out, _ = self.encoder(embeds.unsqueeze(1).float())  # -> [num of words in sentence, 1, hidden_dim*2]
 
 
         # Get score for each possible edge in the parsing graph, construct score matrix

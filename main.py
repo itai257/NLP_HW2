@@ -47,7 +47,7 @@ train_dataloader = DataLoader(train, shuffle=True)
 #test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 100
+EPOCHS = 150
 WORD_EMBEDDING_DIM = 100
 HIDDEN_DIM = 1000
 word_vocab_size = len(train.word_idx_mappings)
@@ -104,9 +104,9 @@ for epoch in range(epochs):
         if i % 500 == 0:
             text = "-------------------\ntagged_tree: {}, real_tree: {}\nlast 500 acc: {}\nloss:{}"\
                 .format(predicted_tree, true_tree_heads, sum(acc_list[-500:]) / len(acc_list[-500:])
-                        , np.mean(loss_list[-500:]))
+                        , printable_loss / i)
             print(text)
-            result_file.write()
+            result_file.write(text)
         printable_loss += loss.item()
     printable_loss = printable_loss / len(train)
     loss_list.append(float(printable_loss))
