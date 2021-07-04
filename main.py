@@ -69,7 +69,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+optimizer = optim.Adam(model.parameters(), lr=0.002)
 acumulate_grad_steps = 40  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
@@ -84,27 +84,29 @@ for epoch in range(epochs):
     i = 0
     for batch_idx, input_data in enumerate(train_dataloader):
         i += 1
+        model.zero_grad()
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
         predicted_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
 
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
-        loss = loss / acumulate_grad_steps
+        #loss = loss / acumulate_grad_steps
         loss.backward()
         acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
         acc_list.append(acc.item())
         #optimizer.step()
         #model.zero_grad()
-        if i % acumulate_grad_steps == 0:
-            optimizer.step()
-            model.zero_grad()
-            if i % 100 == 0:
-                print("-------------------")
-                print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
-                print("acc {}".format(acc))
-                print("batch accuracy: {}".format(sum(acc_list[-acumulate_grad_steps:]) / len(acc_list[-acumulate_grad_steps:])))
+        #if i % acumulate_grad_steps == 0:
+        optimizer.step()
+
+        if i % 100 == 0:
+            print("-------------------")
+            print("tagged_tree: {}, real_tree: {}".format(predicted_tree, true_tree_heads))
+            print("acc {}".format(acc))
+            print("batch accuracy: {}".format(sum(acc_list[-100:]) / len(acc_list[-100:])))
         printable_loss += loss.item()
-    printable_loss = acumulate_grad_steps * (printable_loss / len(train))
+    #printable_loss = acumulate_grad_steps * (printable_loss / len(train))
+    printable_loss = (printable_loss / len(train))
     loss_list.append(float(printable_loss))
     #test_acc = evaluate()
     e_interval = i
