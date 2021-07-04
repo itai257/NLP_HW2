@@ -66,7 +66,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 
 
 # Define the loss function as the Negative Log Likelihood loss (NLLLoss)
-loss_function = nn.HingeEmbeddingLoss()
+loss_function = nn.NLLLoss(ignore_index=-1)
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.002)

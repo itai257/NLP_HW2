@@ -87,12 +87,12 @@ class PosDataReader:
 
         with open(self.file, 'r') as f:
             cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
-            cur_true_heads = ['0']  # addition
+            cur_true_heads = ['-1']  # addition
             for line in f:
                 if line == "\n":
                     self.sentences.append((cur_sentence, cur_true_heads))
                     cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
-                    cur_true_heads = ['0']  # addition
+                    cur_true_heads = ['-1']  # addition
                     continue
 
                 splited_line = split(line, ('\t', '\n'))
@@ -140,7 +140,7 @@ class PosDataset(Dataset):
            self.datareader.word_dict)
 
         self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
-        
+
         self.sentences_dataset = self.convert_sentences_to_dataset(padding)
 
     def __len__(self):
