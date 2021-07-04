@@ -15,24 +15,7 @@ from DataLoad import PosDataset
 from Parser import KiperwasserDependencyParser
 import time
 from chu_liu_edmonds import decode_mst
-"""
 
-path_train = "data/train.labeled"
-#path_test = "data/test.labeled"
-#paths_list = [path_train, path_test]
-
-
-word_dict, pos_dict = get_vocabs([path_train])
-#pos_tagger = PosDataReader(path_train, word_dict, pos_dict)
-
-train = PosDataset(word_dict, pos_dict, "data/", 'train', padding=False)
-
-
-#train_dataloader = DataLoader(train, shuffle=True)
-#test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
-#test_dataloader = DataLoader(test, shuffle=False)
-
-"""
 
 ########################################################
 #def evaluate():
@@ -54,8 +37,9 @@ path_train = data_dir + "train.labeled"
 print("path_train -", path_train)
 path_test = data_dir + "test.labeled"
 print("path_test -", path_test)
-
 paths_list = [path_train]
+
+
 word_dict, pos_dict = get_vocabs(paths_list)
 train = PosDataset(word_dict, pos_dict, data_dir, 'train', padding=False)
 train_dataloader = DataLoader(train, shuffle=True)
@@ -85,15 +69,14 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 loss_function = nn.NLLLoss()
 
 # We will be using a simple SGD optimizer to minimize the loss function
-optimizer = optim.Adam(model.parameters(), lr=0.01)
-acumulate_grad_steps = 70  # This is the actual batch_size, while we officially use batch_size=1
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+acumulate_grad_steps = 40  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
 accuracy_list = []
 loss_list = []
 epochs = EPOCHS
-clip = 1000 # gradient clipping
 for epoch in range(epochs):
     epoch_start_time = time.time()
     acc_list = []  # to keep track of accuracy

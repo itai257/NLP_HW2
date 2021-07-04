@@ -45,11 +45,11 @@ def get_vocabs(list_of_paths):
     word_dict = defaultdict(int)
     pos_dict = defaultdict(int)
     alpha = 0.25
-    #j = 0
+
     for s_t in SPECIAL_TOKENS:
         word_dict[s_t] += 1
-        #pos_dict[str(j)] += 1
-        #j += 1
+        pos_dict[s_t] += 1
+
     for file_path in list_of_paths:
         with open(file_path) as f:
             for line in f:
@@ -66,11 +66,9 @@ def get_vocabs(list_of_paths):
     for word in word_dict.keys():
         if alpha / (alpha + word_dict[word]) > 0.2 and word not in SPECIAL_TOKENS:
             words_to_drop.append(word)
-    i = 0
+
     for w in words_to_drop:
         word_dict.pop(w)
-        i+=1
-    print(i)
     return word_dict, pos_dict
 
 
@@ -118,26 +116,31 @@ class PosDataReader:
 
 
 class PosDataset(Dataset):
-    def __init__(self, word_dict, pos_dict, dir_path: str, subset: str,
-                 padding=False, word_embeddings=None):
+    def __init__(self, word_dict, pos_dict, dir_path: str, subset: str, padding=False):
         super().__init__()
         self.subset = subset  # One of the following: [train, test]
         self.file = dir_path + subset + ".labeled"
         self.datareader = PosDataReader(self.file, word_dict, pos_dict)
         self.vocab_size = len(self.datareader.word_dict)
 
-        # one hot embeddings:
+        ## one hot embeddings:
+        #self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
+        #    self.datareader.word_dict)
+
+        ## one hot embeddings:
+        #self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
+
+        #self.pad_idx = self.word_idx_mappings.get(PAD_TOKEN)
+        #self.unknown_idx = self.word_idx_mappings.get(UNKNOWN_TOKEN)
+        #self.word_vector_dim = self.word_vectors.size(-1)
+        #self.sentence_lens = [len(s[0]) for s in self.datareader.sentences]
+        #self.max_seq_len = max(self.sentence_lens)
+
         self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
-            self.datareader.word_dict)
+           self.datareader.word_dict)
 
-        # one hot embeddings:
         self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
-
-        self.pad_idx = self.word_idx_mappings.get(PAD_TOKEN)
-        self.unknown_idx = self.word_idx_mappings.get(UNKNOWN_TOKEN)
-        self.word_vector_dim = self.word_vectors.size(-1)
-        self.sentence_lens = [len(s[0]) for s in self.datareader.sentences]
-        self.max_seq_len = max(self.sentence_lens)
+        
         self.sentences_dataset = self.convert_sentences_to_dataset(padding)
 
     def __len__(self):
