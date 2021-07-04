@@ -115,7 +115,7 @@ for epoch in range(epochs):
     epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, \
     time:".format(epoch + 1, np.mean(loss_list[-e_interval:]), sum(acc_list[-e_interval:]) / len(acc_list[-e_interval:]),
                   time.time() - epoch_start_time)
-    print("epoch_print")
+    print(epoch_print)
 
     result_file.write(epoch_print)
     result_file.close()
