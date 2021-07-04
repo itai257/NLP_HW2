@@ -42,6 +42,12 @@ class KiperwasserDependencyParser(nn.Module):
         self.layer_1 = torch.nn.Linear(biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
         self.layer_2 = torch.nn.Linear(self.hidden_dim_MLP, 1)
         self.activation = torch.tanh
+        self.mlp = nn.Sequential(
+            torch.nn.Linear(biLSTM_hidden_size*2*2, self.hidden_dim_MLP),
+            nn.ReLU(),
+            nn.Linear(self.hidden_dim_MLP, self.hidden_dim_MLP),
+            nn.ReLU(),
+            nn.Linear(self.hidden_dim_MLP, 1))
         #self.loss_function = nn.NLLLoss()  # Implement the loss function described above
 
     def forward(self, sentence):
@@ -99,7 +105,5 @@ class KiperwasserDependencyParser(nn.Module):
         Z = Z.view(-1, Z.shape[-1]).to(self.device)
         return Z
     def edge_scorer(self, v_head_modifier):
-        x = self.layer_1(v_head_modifier)  # x.size() -> [batch_size, self.hidden_dim]
-        x = self.activation(x)  # x.size() -> [self.hidden_dim, self.hidden_dim]
-        x = self.layer_2(x)  # x.size() -> [batch_size, 1]
+        x = self.mlp(v_head_modifier)
         return x
