@@ -47,7 +47,7 @@ train_dataloader = DataLoader(train, shuffle=True)
 #test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 150
+EPOCHS = 170
 WORD_EMBEDDING_DIM = 100
 HIDDEN_DIM = 1000
 word_vocab_size = len(train.word_idx_mappings)
