@@ -46,9 +46,9 @@ def get_vocabs(list_of_paths):
     pos_dict = defaultdict(int)
     alpha = 0.25
 
-    for s_t in SPECIAL_TOKENS:
-        word_dict[s_t] += 1
-        pos_dict[s_t] += 1
+    #for s_t in SPECIAL_TOKENS:
+    #    word_dict[s_t] += 1
+    #    pos_dict[s_t] += 1
 
     for file_path in list_of_paths:
         with open(file_path) as f:
@@ -139,7 +139,7 @@ class PosDataset(Dataset):
         self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
            self.datareader.word_dict)
 
-        self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
+        self.pos_idx_mappings, self.idx_pos_mappings = self.init_pos_vocab(self.datareader.pos_dict)
 
         self.sentences_dataset = self.convert_sentences_to_dataset(padding)
 
@@ -151,22 +151,22 @@ class PosDataset(Dataset):
         return word_embed_idx, pos_embed_idx, sentence_len, true_tree_heads
 
     @staticmethod
-    #def init_word_embeddings(word_dict):
-    #    glove = Vocab(Counter(word_dict), vectors="glove.6B.300d", specials=SPECIAL_TOKENS)
-    #    return glove.stoi, glove.itos, glove.vectors
-
     def init_word_embeddings(word_dict):
-        word_idx_mappings = dict()
-        idx_word_mappings = []
-        word_vectors = []
-        i = 0
-        for word in word_dict:
-            word_idx_mappings[str(word)] = i
-            idx_word_mappings.append(str(word))
-            word_vectors.append(i)
-            i += 1
+        glove = Vocab(Counter(word_dict), vectors="glove.6B.300d", specials=SPECIAL_TOKENS)
+        return glove.stoi, glove.itos, glove.vectors
 
-        return word_idx_mappings, idx_word_mappings, F.one_hot(torch.tensor(word_vectors), num_classes=len(word_dict))
+    #def init_word_embeddings(word_dict):
+    #    word_idx_mappings = dict()
+    #    idx_word_mappings = []
+    #    word_vectors = []
+    #    i = 0
+    #    for word in word_dict:
+    #        word_idx_mappings[str(word)] = i
+    #        idx_word_mappings.append(str(word))
+    #        word_vectors.append(i)
+    #        i += 1
+#
+    #    return word_idx_mappings, idx_word_mappings, F.one_hot(torch.tensor(word_vectors), num_classes=len(word_dict))
 
     def get_word_embeddings(self):
         return self.word_idx_mappings, self.idx_word_mappings, self.word_vectors
@@ -174,17 +174,15 @@ class PosDataset(Dataset):
     def init_pos_vocab(self, pos_dict):
         idx_pos_mappings = sorted([self.word_idx_mappings.get(token) for token in SPECIAL_TOKENS])
         pos_idx_mappings = {self.idx_word_mappings[idx]: idx for idx in idx_pos_mappings}
-        pos_vectors = sorted([i for i in range(len(SPECIAL_TOKENS))])
 
         for i, pos in enumerate(sorted(pos_dict.keys())):
             # pos_idx_mappings[str(pos)] = int(i)
             j = int(i + len(SPECIAL_TOKENS))
             pos_idx_mappings[str(pos)] = j
             idx_pos_mappings.append(str(pos))
-            pos_vectors.append(j)
         print("idx_pos_mappings -", idx_pos_mappings)
         print("pos_idx_mappings -", pos_idx_mappings)
-        return pos_idx_mappings, idx_pos_mappings, F.one_hot(torch.tensor(pos_vectors), num_classes=(len(pos_dict) + len(SPECIAL_TOKENS)))
+        return pos_idx_mappings, idx_pos_mappings
 
     def get_pos_vocab(self):
         return self.pos_idx_mappings, self.idx_pos_mappings

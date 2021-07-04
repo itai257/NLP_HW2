@@ -11,44 +11,38 @@ from torch import Tensor
 
 
 class KiperwasserDependencyParser(nn.Module):
-    def __init__(self, *args):
+    def __init__(self, biLSTM_hidden_dim, word_vocab_size, tag_vocab_size, external_words_embeddings = None):
         super(KiperwasserDependencyParser, self).__init__()
-        self.word_embeddings_one_hot = args[0]
-        self.pos_embeddings_one_hot = args[4]
-        biLSTM_hidden_size = args[1]
-        word_vocab_size = args[2]
-        tag_vocab_size = args[3]
-        #word_embedding_dim = word_vocab_size
-        #tag_embedding_dim = tag_vocab_size
+        if external_words_embeddings is not None:
+            self.word_embedding = nn.Embedding.from_pretrained(external_words_embeddings, freeze=False)
+            self.word_embedding_dim = 300
+            self.tag_embedding_dim = 50
+        else:
+            self.word_embedding_dim = 100
+            self.tag_embedding_dim = 25
+            self.word_embedding = nn.Embedding(word_vocab_size, self.word_embedding_dim)
 
-        word_embedding_dim = 100
-        tag_embedding_dim = 25
+        self.biLSTM_hidden_size = biLSTM_hidden_dim
+        biLSTM_in_size = self.word_embedding_dim + self.tag_embedding_dim
+
+        self.pos_embedding = nn.Embedding(tag_vocab_size, self.tag_embedding_dim)
+
+
         # self.device = "cpu"
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        #word_embedding_dim = args[4]
-        #tag_embedding_dim = args[5]
 
-        #?? not sure:
-        #word_embedding_dim = biLSTM_hidden_size
-        #tag_embedding_dim = biLSTM_hidden_size
-        biLSTM_in_size = word_embedding_dim+tag_embedding_dim
         #
-        self.word_embedding = nn.Embedding(word_vocab_size, word_embedding_dim) # Implement embedding layer for words (can be new or pretrained - word2vec/glove)
-        self.pos_embedding = nn.Embedding(tag_vocab_size, tag_embedding_dim) # Implement embedding layer for POS tags
         #self.hidden_dim = self.word_embedding.embedding_dim + self.pos_embedding.embedding_dim
-        self.encoder = nn.LSTM(input_size=biLSTM_in_size, hidden_size=biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
+        self.encoder = nn.LSTM(input_size=biLSTM_in_size, hidden_size=self.biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
         self.decoder = decode_mst  # This is used to produce the maximum spannning tree during inference
         self.hidden_dim_MLP = 100
-        self.layer_1 = torch.nn.Linear(biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
+        self.layer_1 = torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
         self.layer_2 = torch.nn.Linear(self.hidden_dim_MLP, 1)
         self.activation = torch.tanh
         self.mlp = nn.Sequential(
-            torch.nn.Linear(biLSTM_hidden_size*2*2, self.hidden_dim_MLP),
-            nn.ReLU(),
-            nn.Linear(self.hidden_dim_MLP, self.hidden_dim_MLP),
+            torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP),
             nn.ReLU(),
             nn.Linear(self.hidden_dim_MLP, 1))
-        #self.loss_function = nn.NLLLoss()  # Implement the loss function described above
 
     def forward(self, sentence):
         word_idx_tensor, pos_idx_tensor, true_tree_heads = sentence
