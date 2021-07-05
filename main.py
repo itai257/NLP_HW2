@@ -69,7 +69,7 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 loss_function = nn.NLLLoss(ignore_index=-1)
 
 # We will be using a simple SGD optimizer to minimize the loss function
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 acumulate_grad_steps = 40  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
@@ -94,7 +94,7 @@ for epoch in range(epochs):
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
         #loss = loss / acumulate_grad_steps
         loss.backward()
-        acc = sum(predicted_tree == true_tree_heads[0].numpy()) / len(predicted_tree)
+        acc = sum(predicted_tree[1:] == true_tree_heads[0].numpy()[1:]) / len(predicted_tree)
         acc_list.append(acc.item())
         #optimizer.step()
         #model.zero_grad()
