@@ -25,7 +25,7 @@ class KiperwasserDependencyParser(nn.Module):
 
         #self.biLSTM_hidden_size = biLSTM_hidden_dim+500
         self.biLSTM_in_size = self.word_embedding_dim + self.tag_embedding_dim
-
+        self.biLSTM_hidden_size = self.biLSTM_in_size
         self.pos_embedding = nn.Embedding(tag_vocab_size, self.tag_embedding_dim)
 
 
