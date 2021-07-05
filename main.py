@@ -53,7 +53,7 @@ test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 15
+EPOCHS = 2
 WORD_EMBEDDING_DIM = 100
 POS_EMBEDDING_DIM = 25
 LSTM_HIDDEN_DIM = 125
