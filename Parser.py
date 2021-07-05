@@ -13,18 +13,18 @@ from torch import Tensor
 class KiperwasserDependencyParser(nn.Module):
     def __init__(self, biLSTM_hidden_dim, word_vocab_size, tag_vocab_size, pretrained_words_embeddings = None):
         super(KiperwasserDependencyParser, self).__init__()
-        if pretrained_words_embeddings is not None:
-            self.word_embedding = nn.Embedding(word_vocab_size, 150)
-            self.pre_trained_embeddings = nn.Embedding.from_pretrained(pretrained_words_embeddings, freeze=True)
-            self.word_embedding_dim = 300+150
-            self.tag_embedding_dim = 50
-        else:
-            self.word_embedding_dim = 100
-            self.tag_embedding_dim = 25
-            self.word_embedding = nn.Embedding(word_vocab_size, self.word_embedding_dim)
+        #if pretrained_words_embeddings is not None:
+        #    self.word_embedding = nn.Embedding(word_vocab_size, 150)
+        #    self.pre_trained_embeddings = nn.Embedding.from_pretrained(pretrained_words_embeddings, freeze=True)
+        #    self.word_embedding_dim = 300+150
+        #    self.tag_embedding_dim = 50
+        #else:
+        self.word_embedding_dim = 100
+        self.tag_embedding_dim = 25
+        self.word_embedding = nn.Embedding(word_vocab_size, self.word_embedding_dim)
 
-        self.biLSTM_hidden_size = biLSTM_hidden_dim+500
-        biLSTM_in_size = self.word_embedding_dim + self.tag_embedding_dim
+        #self.biLSTM_hidden_size = biLSTM_hidden_dim+500
+        self.biLSTM_in_size = self.word_embedding_dim + self.tag_embedding_dim
 
         self.pos_embedding = nn.Embedding(tag_vocab_size, self.tag_embedding_dim)
 
@@ -34,7 +34,7 @@ class KiperwasserDependencyParser(nn.Module):
 
         #
         #self.hidden_dim = self.word_embedding.embedding_dim + self.pos_embedding.embedding_dim
-        self.encoder = nn.LSTM(input_size=biLSTM_in_size, hidden_size=self.biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
+        self.encoder = nn.LSTM(input_size=self.biLSTM_in_size, hidden_size=self.biLSTM_hidden_size, num_layers=2, bidirectional=True, batch_first=False) # Implement BiLSTM module which is fed with word+pos embeddings and outputs hidden representations
         self.decoder = decode_mst  # This is used to produce the maximum spannning tree during inference
         self.hidden_dim_MLP = 100
         self.layer_1 = torch.nn.Linear(self.biLSTM_hidden_size*2*2, self.hidden_dim_MLP)
