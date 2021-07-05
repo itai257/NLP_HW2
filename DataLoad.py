@@ -96,7 +96,7 @@ class PosDataReader:
                     continue
 
                 splited_line = split(line, ('\t', '\n'))
-                token = splited_line[1]
+                token = splited_line[1].lower()
                 pos_tag = splited_line[3]
                 true_head = splited_line[6]
                 if token in self.word_dict.keys():
