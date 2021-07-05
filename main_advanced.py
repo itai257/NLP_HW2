@@ -9,6 +9,7 @@ from Parser import KDependencyParserAdvanced
 import time
 from chu_liu_edmonds import decode_mst
 import matplotlib.pyplot as plt
+import pickle
 
 def loss_function(scores, real):
     nll_loss = nn.NLLLoss(ignore_index=-1)
@@ -123,7 +124,14 @@ for epoch in range(epochs):
     time: {}".format(epoch + 1, train_loss, train_accuracy, test_loss, test_accuracy, time_of_epoch)
     print(epoch_print)
 
+# save model and vocabulary
 torch.save(model, PATH_TO_SAVE_MODEL)
+with open('data/word_vocabulary.pkl', 'wb+') as output:
+    pickle.dump(word_dict, output, pickle.HIGHEST_PROTOCOL)
+
+with open('data/pos_vocabulary.pkl', 'wb+') as output:
+    pickle.dump(pos_dict, output, pickle.HIGHEST_PROTOCOL)
+
 # show graphs:
 
 # train:
