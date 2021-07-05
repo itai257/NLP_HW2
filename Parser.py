@@ -51,7 +51,7 @@ class KiperwasserDependencyParser(nn.Module):
 
         # Pass word_idx and pos_idx through their embedding layers
         word_idx_on_device = word_idx_tensor.to(self.device)
-        word_embeds = torch.cat((self.word_embedding(word_idx_on_device).squeeze(0), self.pre_trained_embeddings(word_idx_on_device).squeeze(0)), dim = 1)
+        word_embeds = self.word_embedding(word_idx_on_device)
         pos_embeds = self.pos_embedding(pos_idx_tensor.to(self.device))
 
         #word_embeds = self.word_embeddings_one_hot[word_idx_tensor]
