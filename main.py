@@ -95,7 +95,7 @@ for epoch in range(epochs):
     for batch_idx, input_data in enumerate(train_dataloader):
         i += 1
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
-        evaluate(model, test_dataloader)
+
         score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
 
         loss = loss_function(score_matrix, true_tree_heads.to(device))
