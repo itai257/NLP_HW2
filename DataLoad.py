@@ -4,6 +4,7 @@ from torch.utils.data.dataset import Dataset, TensorDataset
 from pathlib import Path
 from collections import Counter
 import torch
+import numpy as np
 import torch.nn.functional as F
 
 # These are not relevant for our POS tagger but might be usefull for HW2
@@ -61,14 +62,6 @@ def get_vocabs(list_of_paths):
                 word_dict[token] += 1
                 pos_dict[pos_tag] += 1
 
-    #perform dropout:
-    words_to_drop = []
-    for word in word_dict.keys():
-        if alpha / (alpha + word_dict[word]) > 0.2 and word not in SPECIAL_TOKENS:
-            words_to_drop.append(word)
-
-    for w in words_to_drop:
-        word_dict.pop(w)
     return word_dict, pos_dict
 
 
@@ -86,26 +79,23 @@ class PosDataReader:
         """main reader function which also populates the class data structures"""
 
         with open(self.file, 'r') as f:
-            cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
-            cur_true_heads = ['-1']  # addition
+            cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN, -1)]
             for line in f:
                 if line == "\n":
-                    self.sentences.append((cur_sentence, cur_true_heads))
-                    cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN)]
-                    cur_true_heads = ['-1']  # addition
+                    self.sentences.append(cur_sentence)
+                    cur_sentence = [(ROOT_TOKEN, ROOT_TOKEN, -1)]
                     continue
 
                 splited_line = split(line, ('\t', '\n'))
                 token = splited_line[1].lower()
                 pos_tag = splited_line[3]
-                true_head = splited_line[6]
-                if token in self.word_dict.keys():
-                    cur_sentence.append((token, pos_tag))
-                    cur_true_heads.append(true_head)
+                true_head = int(splited_line[6])
+                # perform dropout:
+                alpha = 0.25
+                if (alpha / (alpha + self.word_dict[token])) > np.random.rand() and token not in SPECIAL_TOKENS:
+                    cur_sentence.append((UNKNOWN_TOKEN, pos_tag, true_head))
                 else:
-                    # for words dropout
-                    cur_sentence.append((UNKNOWN_TOKEN, UNKNOWN_TOKEN))
-                    cur_true_heads.append('0')
+                    cur_sentence.append((token, pos_tag, true_head))
 
 
 
@@ -155,19 +145,6 @@ class PosDataset(Dataset):
         glove = Vocab(Counter(word_dict), vectors="glove.6B.300d", specials=SPECIAL_TOKENS)
         return glove.stoi, glove.itos, glove.vectors
 
-    #def init_word_embeddings(word_dict):
-    #    word_idx_mappings = dict()
-    #    idx_word_mappings = []
-    #    word_vectors = []
-    #    i = 0
-    #    for word in word_dict:
-    #        word_idx_mappings[str(word)] = i
-    #        idx_word_mappings.append(str(word))
-    #        word_vectors.append(i)
-    #        i += 1
-#
-    #    return word_idx_mappings, idx_word_mappings, F.one_hot(torch.tensor(word_vectors), num_classes=len(word_dict))
-
     def get_word_embeddings(self):
         return self.word_idx_mappings, self.idx_word_mappings, self.word_vectors
 
@@ -192,19 +169,21 @@ class PosDataset(Dataset):
         sentence_pos_idx_list = list()
         sentence_len_list = list()
         true_tree_heads = list()
-        for sentence_idx, (sentence, true_heads) in enumerate(self.datareader.sentences):
+        for sentence_idx, sentence in enumerate(self.datareader.sentences):
             words_idx_list = []
             pos_idx_list = []
-            for word, pos in sentence:
+            cur_true_tree_heads = []
+            for word, pos, true_head in sentence:
                 words_idx_list.append(self.word_idx_mappings.get(word))
                 pos_idx_list.append(self.pos_idx_mappings.get(pos))
+                cur_true_tree_heads.append(true_head)
 
             sentence_len = len(words_idx_list)
             # if padding:
             #     while len(words_idx_list) < self.max_seq_len:
             #         words_idx_list.append(self.word_idx_mappings.get(PAD_TOKEN))
             #         pos_idx_list.append(self.pos_idx_mappings.get(PAD_TOKEN))
-            true_tree_heads.append(torch.tensor([int(i) for i in true_heads], dtype=torch.long, requires_grad=False))
+            true_tree_heads.append(torch.tensor(cur_true_tree_heads, dtype=torch.long, requires_grad=False))
             sentence_word_idx_list.append(torch.tensor(words_idx_list, dtype=torch.long, requires_grad=False))
             sentence_pos_idx_list.append(torch.tensor(pos_idx_list, dtype=torch.long, requires_grad=False))
             sentence_len_list.append(sentence_len)
