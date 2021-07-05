@@ -81,9 +81,9 @@ class KiperwasserDependencyParser(nn.Module):
         # Use Chu-Liu-Edmonds to get the predicted parse tree T' given the calculated score matrix
         #soft_max_score_matrix = self.soft_max(score_matrix)
 
-        #score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
+        score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
 
-        predicted_tree, _ = decode_mst(score_matrix, len(true_tree_heads[0]), has_labels=False)
+        predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
         # -- predicted_tree, _ = decode_mst(score_matrix_to_decode, num_of_words, has_labels=False)
 
         # Calculate the negative log likelihood loss described above
