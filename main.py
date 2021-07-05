@@ -8,7 +8,7 @@ from DataLoad import PosDataset
 from Parser import KDependencyParserBasic
 import time
 from chu_liu_edmonds import decode_mst
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def loss_function(scores, real):
     nll_loss = nn.NLLLoss(ignore_index=-1)
@@ -127,14 +127,14 @@ for epoch in range(epochs):
 # show graphs:
 
 
-plt.plot(test_accuracy_list, c="red", label ="Accuracy")
-plt.xlabel("Epochs")
-plt.ylabel("Value")
-plt.legend()
-plt.show()
-
-plt.plot(test_loss_list, c="blue", label ="Loss")
-plt.xlabel("Epochs")
-plt.ylabel("Value")
-plt.legend()
-plt.show()
+#plt.plot(test_accuracy_list, c="red", label ="Accuracy")
+#plt.xlabel("Epochs")
+#plt.ylabel("Value")
+#plt.legend()
+#plt.show()
+#
+#plt.plot(test_loss_list, c="blue", label ="Loss")
+#plt.xlabel("Epochs")
+#plt.ylabel("Value")
+#plt.legend()
+#plt.show()
