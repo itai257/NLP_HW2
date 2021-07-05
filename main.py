@@ -54,8 +54,6 @@ def predict(model, test_loader):
         loss += loss_function(scores, true_tree_heads.to(device)).item()
         predictions = predict_edges(scores)[:, 1:]
         true_tree_heads = true_tree_heads.to("cpu").numpy()[:, 1:]
-        print("predictions: {}".format(predictions))
-        print("real senten: {}".format(true_tree_heads))
         acc += np.sum(true_tree_heads == predictions)
         num_of_edges += predictions.size
 
@@ -113,7 +111,6 @@ for epoch in range(epochs):
     i = 0
     for batch_idx, input_data in enumerate(train_dataloader):
         i += 1
-
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
         score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
@@ -128,6 +125,8 @@ for epoch in range(epochs):
             optimizer.step()
             model.zero_grad()
 
+        if i % 500 == 0:
+            print('{}/{} finished for epoch {}'.format(i, len(train), EPOCHS), end='')
         #if i % 500 == 0:
         #    text = "-------------------\ntagged_tree: {}, real_tree: {}\nlast 500 acc: {}\nloss:{}"\
         #        .format(predicted_tree, true_tree_heads, sum(acc_list[-500:]) / len(acc_list[-500:])
@@ -145,7 +144,7 @@ for epoch in range(epochs):
     #              time.time() - epoch_start_time)
     time_of_epoch = time.time() - epoch_start_time
     epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tTest Loss {}\tTest Accuracy: {}\t \
-    time:".format(epoch + 1, test_loss, test_acc, time_of_epoch)
+    time: {}".format(epoch + 1, test_loss, test_acc, time_of_epoch)
     print(epoch_print)
 
     result_file.write(epoch_print)
