@@ -94,7 +94,7 @@ for epoch in range(epochs):
         loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
         #loss = loss / acumulate_grad_steps
         loss.backward()
-        acc = sum(predicted_tree[1:] == true_tree_heads[0].numpy()[1:]) / len(predicted_tree)
+        acc = sum(predicted_tree[1:] == true_tree_heads[0].numpy()[1:]) / (len(predicted_tree)-1)
         acc_list.append(acc.item())
         #optimizer.step()
         #model.zero_grad()
