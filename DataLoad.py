@@ -56,7 +56,7 @@ def get_vocabs(list_of_paths):
                 if line == "\n":
                     continue
                 splited_line = split(line, ('\t', '\n'))
-                token = splited_line[1]
+                token = splited_line[1].lower()
                 pos_tag = splited_line[3]
                 word_dict[token] += 1
                 pos_dict[pos_tag] += 1
