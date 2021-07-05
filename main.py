@@ -53,7 +53,7 @@ test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 2
+EPOCHS = 15
 WORD_EMBEDDING_DIM = 100
 POS_EMBEDDING_DIM = 25
 LSTM_HIDDEN_DIM = 125
@@ -128,7 +128,7 @@ for epoch in range(epochs):
 
 # train:
 fig, axs = plt.subplots(2, 1, constrained_layout=True)
-fig.suptitle('Train', fontsize=16)
+fig.suptitle('Train results - Basic model', fontsize=16)
 axs[0].plot(np.arange(len(train_accuracy_list)), train_accuracy_list, c="red", label ="Accuracy")
 axs[0].set_title('Train accuracy')
 axs[0].set_xlabel('Epochs')
@@ -141,14 +141,17 @@ axs[1].set_title('Train loss')
 
 plt.show()
 
-#plt.plot(test_accuracy_list, c="red", label ="Accuracy")
-#plt.xlabel("Epochs")
-#plt.ylabel("Value")
-#plt.legend()
-##plt.show()
-#
-#plt.plot(test_loss_list, c="blue", label ="Loss")
-#plt.xlabel("Epochs")
-#plt.ylabel("Value")
-#plt.legend()
-#plt.show()
+# test:
+fig, axs = plt.subplots(2, 1, constrained_layout=True)
+fig.suptitle('Test results - Basic model', fontsize=16)
+axs[0].plot(np.arange(len(test_accuracy_list)), test_accuracy_list, c="red", label ="Accuracy")
+axs[0].set_title('Test accuracy')
+axs[0].set_xlabel('Epochs')
+axs[0].set_ylabel('Value')
+
+axs[1].plot(np.arange(len(test_loss_list)), test_loss_list, c="blue", label ="Loss")
+axs[1].set_xlabel('Epochs')
+axs[1].set_ylabel('Value')
+axs[1].set_title('Test loss')
+
+plt.show()
