@@ -125,7 +125,6 @@ for epoch in range(epochs):
         if i % ACCUMULATED_GRAD_STEPS == 0 and i > 0:
             optimizer.step()
             model.zero_grad()
-        evaluate(model, test_dataloader)
     printable_loss = printable_loss / len(train)
     loss_list.append(float(printable_loss))
     test_accuracy, test_loss = evaluate(model, test_dataloader)
