@@ -100,10 +100,10 @@ class PosDataReader:
 
 
 class PosDataset(Dataset):
-    def __init__(self, word_dict, pos_dict, dir_path: str, subset: str, padding=False):
+    def __init__(self, word_dict, pos_dict, dir_path: str, file_name: str, padding=False):
         super().__init__()
-        self.subset = subset  # One of the following: [train, test]
-        self.file = dir_path + subset + ".labeled"
+        #self.subset = subset  # One of the following: [train, test]
+        self.file = dir_path + file_name
         self.datareader = PosDataReader(self.file, word_dict, pos_dict)
         self.vocab_size = len(self.datareader.word_dict)
 

@@ -47,9 +47,9 @@ paths_list = [path_train]
 
 
 word_dict, pos_dict = get_vocabs(paths_list)
-train = PosDataset(word_dict, pos_dict, data_dir, 'train', padding=False)
+train = PosDataset(word_dict, pos_dict, data_dir, 'train.labeled', padding=False)
 train_dataloader = DataLoader(train, shuffle=True)
-test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
+test = PosDataset(word_dict, pos_dict, data_dir, 'test.labeled', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
 

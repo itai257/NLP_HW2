@@ -47,13 +47,13 @@ paths_list = [path_train]
 
 
 word_dict, pos_dict = get_vocabs(paths_list)
-train = PosDataset(word_dict, pos_dict, data_dir, 'train', padding=False)
+train = PosDataset(word_dict, pos_dict, data_dir, 'train.labeled', padding=False)
 train_dataloader = DataLoader(train, shuffle=True)
-test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
+test = PosDataset(word_dict, pos_dict, data_dir, 'test.labeled', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
-
-EPOCHS = 15
+PATH_TO_SAVE_MODEL = "data/model.model"
+EPOCHS = 7
 WORD_EMBEDDING_DIM = 300
 POS_EMBEDDING_DIM = 25
 LSTM_HIDDEN_DIM = 125
@@ -123,7 +123,7 @@ for epoch in range(epochs):
     time: {}".format(epoch + 1, train_loss, train_accuracy, test_loss, test_accuracy, time_of_epoch)
     print(epoch_print)
 
-
+torch.save(model, PATH_TO_SAVE_MODEL)
 # show graphs:
 
 # train:
