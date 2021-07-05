@@ -1,11 +1,9 @@
 from collections import defaultdict
 from torchtext.vocab import Vocab
 from torch.utils.data.dataset import Dataset, TensorDataset
-from pathlib import Path
 from collections import Counter
 import torch
 import numpy as np
-import torch.nn.functional as F
 
 # These are not relevant for our POS tagger but might be usefull for HW2
 UNKNOWN_TOKEN = "<unk>"
@@ -46,10 +44,6 @@ def get_vocabs(list_of_paths):
     word_dict = defaultdict(int)
     pos_dict = defaultdict(int)
     alpha = 0.25
-
-    #for s_t in SPECIAL_TOKENS:
-    #    word_dict[s_t] += 1
-    #    pos_dict[s_t] += 1
 
     for file_path in list_of_paths:
         with open(file_path) as f:
@@ -112,19 +106,6 @@ class PosDataset(Dataset):
         self.file = dir_path + subset + ".labeled"
         self.datareader = PosDataReader(self.file, word_dict, pos_dict)
         self.vocab_size = len(self.datareader.word_dict)
-
-        ## one hot embeddings:
-        #self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
-        #    self.datareader.word_dict)
-
-        ## one hot embeddings:
-        #self.pos_idx_mappings, self.idx_pos_mappings, self.pos_vectors = self.init_pos_vocab(self.datareader.pos_dict)
-
-        #self.pad_idx = self.word_idx_mappings.get(PAD_TOKEN)
-        #self.unknown_idx = self.word_idx_mappings.get(UNKNOWN_TOKEN)
-        #self.word_vector_dim = self.word_vectors.size(-1)
-        #self.sentence_lens = [len(s[0]) for s in self.datareader.sentences]
-        #self.max_seq_len = max(self.sentence_lens)
 
         self.word_idx_mappings, self.idx_word_mappings, self.word_vectors = self.init_word_embeddings(
            self.datareader.word_dict)
