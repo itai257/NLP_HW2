@@ -16,7 +16,11 @@ from Parser import KiperwasserDependencyParser
 import time
 from chu_liu_edmonds import decode_mst
 
-
+def loss_function(scores, real):
+    nll_loss = nn.NLLLoss(ignore_index=-1)
+    log_soft_max = nn.LogSoftmax(dim=1)
+    output = nll_loss(log_soft_max(scores), real)
+    return output
 ########################################################
 #def evaluate():
 #    acc = 0
@@ -66,11 +70,11 @@ device = torch.device("cuda:0" if use_cuda else "cpu")
 
 
 # Define the loss function as the Negative Log Likelihood loss (NLLLoss)
-loss_function = nn.NLLLoss(ignore_index=-1)
+
 
 # We will be using a simple SGD optimizer to minimize the loss function
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-acumulate_grad_steps = 40  # This is the actual batch_size, while we officially use batch_size=1
+acumulate_grad_steps = 50  # This is the actual batch_size, while we officially use batch_size=1
 
 # Training start
 print("Training Started")
@@ -86,20 +90,21 @@ for epoch in range(epochs):
     i = 0
     for batch_idx, input_data in enumerate(train_dataloader):
         i += 1
-        model.zero_grad()
+
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = input_data
 
-        predicted_tree, soft_max_score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
+        predicted_tree, score_matrix = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
 
-        loss = loss_function(soft_max_score_matrix, true_tree_heads[0].to(device))
-        #loss = loss / acumulate_grad_steps
+        loss = loss_function(score_matrix, true_tree_heads[0].to(device))
+
         loss.backward()
+
         acc = sum(predicted_tree[1:] == true_tree_heads[0].numpy()[1:]) / (len(predicted_tree)-1)
         acc_list.append(acc.item())
-        #optimizer.step()
-        #model.zero_grad()
-        #if i % acumulate_grad_steps == 0:
-        optimizer.step()
+
+        if i % acumulate_grad_steps == 0:
+            optimizer.step()
+            model.zero_grad()
 
         if i % 500 == 0:
             text = "-------------------\ntagged_tree: {}, real_tree: {}\nlast 500 acc: {}\nloss:{}"\
