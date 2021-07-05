@@ -55,7 +55,7 @@ def evaluate(model, data_loader):
             score_matrix = scores.squeeze(0).cpu().detach().numpy()
             predictions = mst, _ = decode_mst(score_matrix, len(score_matrix), has_labels=False)
             true_tree_heads = true_tree_heads.to("cpu").numpy()[:, 1:]
-            acc += np.sum(true_tree_heads == predictions)
+            acc += np.sum(true_tree_heads == predictions[0][1:])
             num_of_edges += len(predictions[0])
 
 
