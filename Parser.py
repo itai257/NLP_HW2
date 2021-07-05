@@ -82,6 +82,7 @@ class KiperwasserDependencyParser(nn.Module):
         #soft_max_score_matrix = self.soft_max(score_matrix)
 
         score_matrix_to_decode = torch.tensor(score_matrix).cpu().numpy()
+        score_matrix_to_decode[:, 0] = float("-inf")
 
         predicted_tree, _ = decode_mst(score_matrix_to_decode, len(true_tree_heads[0]), has_labels=False)
         # -- predicted_tree, _ = decode_mst(score_matrix_to_decode, num_of_words, has_labels=False)
