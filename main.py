@@ -35,7 +35,7 @@ def loss_function(scores, real):
 #        acc = acc / len(test)
 #    return acc
 
-# CUDA_LAUNCH_BLOCKING=1
+
 def predict_edges(scores):
     edge_predictions = []
     for sentence_scores in scores:
@@ -45,20 +45,21 @@ def predict_edges(scores):
         edge_predictions.append(mst)
     return np.array(edge_predictions)
 
-def predict(model, test_loader):
-    model.eval()
-    acc = num_of_edges = loss = 0
-    for i, sentence in enumerate(test_loader):
-        words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = sentence
-        scores = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
-        loss += loss_function(scores, true_tree_heads.to(device)).item()
-        predictions = predict_edges(scores)[:, 1:]
-        true_tree_heads = true_tree_heads.to("cpu").numpy()[:, 1:]
-        acc += np.sum(true_tree_heads == predictions)
-        num_of_edges += predictions.size
+def evaluate(model, data_loader):
+    with torch.no_grad():
+        acc = num_of_edges = loss = 0
+        for i, sentence in enumerate(data_loader):
+            words_idx_tensor, pos_idx_tensor, _, true_tree_heads = sentence
+            scores = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
+            loss += loss_function(scores, true_tree_heads.to(device)).item()
+            score_matrix = scores.squeeze(0).cpu().detach().numpy()
+            predictions = mst, _ = decode_mst(score_matrix, len(score_matrix), has_labels=False)
+            true_tree_heads = true_tree_heads.to("cpu").numpy()[:, 1:]
+            acc += np.sum(true_tree_heads == predictions)
+            num_of_edges += len(predictions[0])
 
-    model.train()
-    return acc / num_of_edges, loss / len(test_loader)
+
+    return acc / num_of_edges, loss / len(data_loader)
 data_dir = "data/"
 path_train = data_dir + "train.labeled"
 print("path_train -", path_train)
@@ -124,30 +125,17 @@ for epoch in range(epochs):
         if i % ACCUMULATED_GRAD_STEPS == 0 and i > 0:
             optimizer.step()
             model.zero_grad()
-
-        if i % 500 == 0:
-            print('{}/{} finished for epoch {}'.format(i, len(train), EPOCHS), end='')
-        #if i % 500 == 0:
-        #    text = "-------------------\ntagged_tree: {}, real_tree: {}\nlast 500 acc: {}\nloss:{}"\
-        #        .format(predicted_tree, true_tree_heads, sum(acc_list[-500:]) / len(acc_list[-500:])
-        #                , printable_loss / i)
-        #    print(text)
-        #    result_file.write(text)
-
+        evaluate(model, test_dataloader)
     printable_loss = printable_loss / len(train)
     loss_list.append(float(printable_loss))
-    test_acc, test_loss = predict(model, test_dataloader)
-    #test_acc = evaluate()
+    test_accuracy, test_loss = evaluate(model, test_dataloader)
+    train_accuracy, train_loss = evaluate(model, train_dataloader)
     e_interval = i
-    #epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, \
-    #time:".format(epoch + 1, np.mean(loss_list[-e_interval:]), sum(acc_list[-e_interval:]) / len(acc_list[-e_interval:]),
-    #              time.time() - epoch_start_time)
+
     time_of_epoch = time.time() - epoch_start_time
-    epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tTest Loss {}\tTest Accuracy: {}\t \
-    time: {}".format(epoch + 1, test_loss, test_acc, time_of_epoch)
+    epoch_print = "---\nEpoch {} Completed,\tTrain Loss {}\tTrain Accuracy: {}\t Test Loss {}\tTest Accuracy: {}\t \
+    time: {}".format(epoch + 1, train_loss, train_accuracy, test_loss, test_accuracy, time_of_epoch)
     print(epoch_print)
 
     result_file.write(epoch_print)
     result_file.close()
-
-
