@@ -18,7 +18,7 @@ from chu_liu_edmonds import decode_mst
 
 def loss_function(scores, real):
     nll_loss = nn.NLLLoss(ignore_index=-1)
-    log_soft_max = nn.LogSoftmax(dim=1)
+    log_soft_max = nn.LogSoftmax(dim=0)
     output = nll_loss(log_soft_max(scores), real)
     return output
 ########################################################
