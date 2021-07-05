@@ -60,10 +60,7 @@ class KiperwasserDependencyParser(nn.Module):
         num_of_words = len(true_tree_heads[0])
 
         # Concat both embedding outputs
-        print(word_embeds.shape)
-        print(pos_embeds.shape)
         embeds = torch.cat((word_embeds.squeeze(0), pos_embeds.squeeze(0)), 1).to(self.device) #[sentence_length, word_embed + pos_embed]
-        print(embeds.shape)
         # Get Bi-LSTM hidden representation for each word+pos in sentence
         lstm_out, _ = self.encoder(embeds.unsqueeze(1).float())  # -> [num of words in sentence, 1, hidden_dim*2]
 
