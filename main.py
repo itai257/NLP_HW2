@@ -53,7 +53,7 @@ test = PosDataset(word_dict, pos_dict, data_dir, 'test', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 1
+EPOCHS = 2
 WORD_EMBEDDING_DIM = 100
 POS_EMBEDDING_DIM = 25
 LSTM_HIDDEN_DIM = 125
@@ -129,12 +129,12 @@ for epoch in range(epochs):
 # train:
 fig, axs = plt.subplots(2, 1, constrained_layout=True)
 fig.suptitle('Train', fontsize=16)
-axs[0].plot(train_accuracy_list, c="red", label ="Accuracy")
+axs[0].plot(np.arange(len(train_accuracy_list)), train_accuracy_list, c="red", label ="Accuracy")
 axs[0].set_title('Train accuracy')
 axs[0].set_xlabel('Epochs')
 axs[0].set_ylabel('Value')
 
-axs[1].plot(train_loss_list, c="blue", label ="Loss")
+axs[1].plot(np.arange(len(train_loss_list)), train_loss_list, c="blue", label ="Loss")
 axs[1].set_xlabel('Epochs')
 axs[1].set_ylabel('Value')
 axs[1].set_title('Train loss')
