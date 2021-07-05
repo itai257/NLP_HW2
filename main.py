@@ -51,11 +51,11 @@ def predict(model, test_loader):
     for i, sentence in enumerate(test_loader):
         words_idx_tensor, pos_idx_tensor, sentence_length, true_tree_heads = sentence
         scores = model((words_idx_tensor, pos_idx_tensor, true_tree_heads))
-        loss += loss_function(scores, true_tree_heads).item()
+        loss += loss_function(scores, true_tree_heads.to(device)).item()
         predictions = predict_edges(scores)[:, 1:]
         true_tree_heads = true_tree_heads.to("cpu").numpy()[:, 1:]
         print("predictions: {}".format(predictions))
-        print("headers: {}".format(true_tree_heads))
+        print("real senten: {}".format(true_tree_heads))
         acc += np.sum(true_tree_heads == predictions)
         num_of_edges += predictions.size
 
@@ -143,9 +143,9 @@ for epoch in range(epochs):
     #epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tLoss {}\tAccuracy: {}\t Test Accuracy: {}, \
     #time:".format(epoch + 1, np.mean(loss_list[-e_interval:]), sum(acc_list[-e_interval:]) / len(acc_list[-e_interval:]),
     #              time.time() - epoch_start_time)
+    time_of_epoch = time.time() - epoch_start_time
     epoch_print = "---\n---\n---\n---\n---\n---\n---\nEpoch {} Completed,\tTest Loss {}\tTest Accuracy: {}\t \
-    time:".format(epoch + 1, test_loss, test_acc,
-                  time.time() - epoch_start_time)
+    time:".format(epoch + 1, test_loss, test_acc, time_of_epoch)
     print(epoch_print)
 
     result_file.write(epoch_print)
