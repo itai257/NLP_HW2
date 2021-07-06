@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -45,6 +47,7 @@ path_test = data_dir + "test.labeled"
 print("path_test -", path_test)
 paths_list = [path_train]
 
+PATH_TO_SAVE_MODEL = "data/basic/basic_model.model"
 
 word_dict, pos_dict = get_vocabs(paths_list)
 train = PosDataset(word_dict, pos_dict, data_dir, 'train.labeled', padding=False)
@@ -53,7 +56,7 @@ test = PosDataset(word_dict, pos_dict, data_dir, 'test.labeled', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
 
-EPOCHS = 15
+EPOCHS = 7
 WORD_EMBEDDING_DIM = 100
 POS_EMBEDDING_DIM = 25
 LSTM_HIDDEN_DIM = 125
@@ -123,6 +126,14 @@ for epoch in range(epochs):
     time: {}".format(epoch + 1, train_loss, train_accuracy, test_loss, test_accuracy, time_of_epoch)
     print(epoch_print)
 
+# save model and vocabulary
+print("saving model: \nvocabulary path: data/basic/word_vocabulary.pkl, data/basic/pos_vocabulary.pkl \nmodel file: {}".format(PATH_TO_SAVE_MODEL))
+torch.save(model, PATH_TO_SAVE_MODEL)
+with open('data/basic/word_vocabulary.pkl', 'wb+') as output:
+    pickle.dump(word_dict, output, pickle.HIGHEST_PROTOCOL)
+
+with open('data/basic/pos_vocabulary.pkl', 'wb+') as output:
+    pickle.dump(pos_dict, output, pickle.HIGHEST_PROTOCOL)
 
 # show graphs:
 

@@ -53,7 +53,7 @@ train_dataloader = DataLoader(train, shuffle=True)
 test = PosDataset(word_dict, pos_dict, data_dir, 'test.labeled', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
-PATH_TO_SAVE_MODEL = "data/model.model"
+PATH_TO_SAVE_MODEL = "data/advanced/advanced_model.model"
 EPOCHS = 7
 WORD_EMBEDDING_DIM = 300
 POS_EMBEDDING_DIM = 25
@@ -125,11 +125,12 @@ for epoch in range(epochs):
     print(epoch_print)
 
 # save model and vocabulary
+print("saving model: \nvocabulary path: data/advanced/word_vocabulary.pkl, data/advanced/pos_vocabulary.pkl \nmodel file: {}".format(PATH_TO_SAVE_MODEL))
 torch.save(model, PATH_TO_SAVE_MODEL)
-with open('data/word_vocabulary.pkl', 'wb+') as output:
+with open('data/advanced/word_vocabulary.pkl', 'wb+') as output:
     pickle.dump(word_dict, output, pickle.HIGHEST_PROTOCOL)
 
-with open('data/pos_vocabulary.pkl', 'wb+') as output:
+with open('data/advanced/pos_vocabulary.pkl', 'wb+') as output:
     pickle.dump(pos_dict, output, pickle.HIGHEST_PROTOCOL)
 
 # show graphs:

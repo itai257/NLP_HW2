@@ -83,7 +83,10 @@ class PosDataReader:
                 splited_line = split(line, ('\t', '\n'))
                 token = splited_line[1].lower()
                 pos_tag = splited_line[3]
-                true_head = int(splited_line[6])
+                if splited_line[6] != '_':
+                    true_head = int(splited_line[6])
+                else:
+                    true_head = -1
                 # perform dropout:
                 alpha = 0.25
                 if (alpha / (alpha + self.word_dict[token])) > np.random.rand() and token not in SPECIAL_TOKENS:
