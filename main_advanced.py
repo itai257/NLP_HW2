@@ -53,7 +53,7 @@ train_dataloader = DataLoader(train, shuffle=True)
 test = PosDataset(word_dict, pos_dict, data_dir, 'test.labeled', padding=False)
 test_dataloader = DataLoader(test, shuffle=False)
 
-PATH_TO_SAVE_MODEL = "data/advanced/advanced_model.model"
+PATH_TO_SAVE_MODEL = "data/advanced/advanced_model.pkl"
 EPOCHS = 7
 WORD_EMBEDDING_DIM = 300
 POS_EMBEDDING_DIM = 25

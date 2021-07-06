@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 from DataLoad import PosDataset
 from chu_liu_edmonds import decode_mst
 
-PATH_MODEL_BASIC = "data/basic/basic_model.model"
-PATH_MODEL_ADVANCED = "data/advanced/advanced_model.model"
+PATH_MODEL_BASIC = "data/basic/basic_model.pkl"
+PATH_MODEL_ADVANCED = "data/advanced/advanced_model.pkl"
 
 PATH_WORD_VOCAB_BASIC = "data/basic/word_vocabulary.pkl"
 PATH_POS_VOCAB_BASIC = "data/basic/pos_vocabulary.pkl"
